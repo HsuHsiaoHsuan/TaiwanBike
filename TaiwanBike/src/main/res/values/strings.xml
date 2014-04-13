@@ -1,3 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Taiwan Bike</string>
+    <string name="mode_list">List view</string>
+    <string name="mode_map">Map view</string>
+    <string name="loading">Updating...</string>
+    <string name="update_ok">Update OK!</string>
+    <string name="check_netowrk">Please check network first.</string>
+    <string name="search">Search</string>
+    <string name="no_data">Please add Favor Sites</string>
+    <string name="cc">Creative Commons</string>
+
+    <string name="all">All Sites</string>
+    <string name="favorites">My Favor</string>
+    <string name="refresh">Refresh</string>
+    <string name="list_view">Open List</string>
+    <string name="favor_list_view">Open Favor List</string>
+    <string name="update">Update</string>
+    <string name="add_favor">Add to Favor</string>
+    <string name="remove_favor">Remove Favor</string>
+    <string name="no_favor_hint">Please add favor site(s) first.</string>
+
+    <string name="drawer_open">Open sites list</string>
+    <string name="drawer_close">Close sites list</string>
+
+    <string name="StationName">Name: </string>
+    <string name="StationAddress">Address: </string>
+    <string name="StationDesc">Data: </string>
+    <string name="StationBike">BIKE</string>
+    <string name="StationPark">PARKING</string>
+
+    <string name="distance">Linear Dist:approx.</string>
+    <string name="kilometer"> km.</string>
+    <string name="meter"> m.</string>
+    <string name="millimeter"> mm.</string>
+    <string name="distance_hint">Can\'t get your location now.</string>
+
+    <string name="query_hint">Input Site Name</string>
+
+    <string name="help">Help</string>
+    <string name="map_license">Google Play Service License</string>
+
+    <string name="nav_no_route">Sorry, no route to your destination.</string>
+
+    <string name="nav_transit_take">Take </string>
+    <string name="nav_transit_from"> from </string>
+    <string name="nav_transit_to"> to </string>
+
+    <string name="back_to_map">Back to map</string>
+    <string name="close_app">Close Application</string>
+    <string name="tai_or_kao">Cloose Taipei or Kaohsiung</string>
+    <string name="tai_or_kao_msg">Which data you need? \n\n Taipei(U Bike) or Kaohsiung(City Bike)</string>
+    <string name="taipei">Taipei</string>
+    <string name="kaohsiung">Kaohsiung</string>
+    
+    <array name="district_kao">
+        <item>楠梓區</item>
+        <item>左營區</item>
+        <item>鼓山區</item>
+        <item>三民區</item>
+        <item>苓雅區</item>
+        <item>新興區</item>
+        <item>前金區</item>
+        <item>鹽埕區</item>
+        <item>前鎮區</item>
+        <item>旗津區</item>
+        <item>小港區</item>
+        <item>鳳山區</item>
+        <item>茂林區</item>
+        <item>甲仙區</item>
+        <item>六龜區</item>
+        <item>杉林區</item>
+        <item>美濃區</item>
+        <item>內門區</item>
+        <item>仁武區</item>
+        <item>田寮區</item>
+        <item>旗山區</item>
+        <item>梓官區</item>
+        <item>阿蓮區</item>
+        <item>湖內區</item>
+        <item>崗山區</item>
+        <item>茄萣區</item>
+        <item>路竹區</item>
+        <item>鳥松區</item>
+        <item>永安區</item>
+        <item>燕巢區</item>
+        <item>大樹區</item>
+        <item>大寮區</item>
+        <item>林園區</item>
+        <item>彌陀區</item>
+        <item>橋頭區</item>
+        <item>大社區</item>
+        <item>那瑪夏區</item>
+        <item>桃源區</item>
+    </array>
 </resources>

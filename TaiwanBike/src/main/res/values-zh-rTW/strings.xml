@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">臺灣單車</string>
+    <string name="mode_list">清單檢視</string>
+    <string name="mode_map">地圖檢視</string>
+    <string name="loading">更新中...</string>
+    <string name="update_ok">更新成功</string>
+    <string name="check_netowrk">請檢查網路連線</string>
+    <string name="search">搜索</string>
+    <string name="no_data">請增加最愛單車站台</string>
+    <string name="cc">創作共用</string>
+
+    <string name="all">全部站點</string>
+    <string name="favorites">我的最愛</string>
+    <string name="refresh">更新</string>
+    <string name="list_view">清單</string>
+    <string name="favor_list_view">最愛清單</string>
+    <string name="update">更新資料</string>
+    <string name="add_favor">加入最愛</string>
+    <string name="remove_favor">移除最愛</string>
+    <string name="no_favor_hint">請先增加最愛站台</string>
+
+    <string name="drawer_open">打開站台清單</string>
+    <string name="drawer_close">關閉站台清單</string>
+
+    <string name="StationName">站名: </string>
+    <string name="StationAddress">站址: </string>
+    <string name="StationDesc">資料: </string>
+    <string name="StationBike">可借單車</string>
+    <string name="StationPark">可停車位</string>
+
+    <string name="distance">直線距離:約</string>
+    <string name="kilometer"> 公里</string>
+    <string name="meter"> 公尺</string>
+    <string name="millimeter"> 公厘</string>
+    <string name="distance_hint"> 目前無法取得您所在位置。</string>
+
+    <string name="query_hint">輸入查訊站點名稱</string>
+
+    <string name="help">說明</string>
+    <string name="map_license">Google Play Service 版權宣告</string>
+
+    <string name="nav_no_route">抱歉找不到導航路線。</string>
+
+    <string name="nav_transit_take">搭 </string>
+    <string name="nav_transit_from"> 從 </string>
+    <string name="nav_transit_to"> 到 </string>
+
+    <string name="back_to_map">回到地圖</string>
+    <string name="close_app">關閉程式</string>
+    <string name="tai_or_kao">選擇臺北或高雄</string>
+    <string name="tai_or_kao_msg">請選擇您要的資訊，\n\n台北(U Bike) 或 高雄(City Bike)</string>
+    <string name="taipei">臺北</string>
+    <string name="kaohsiung">高雄</string>
+
+</resources>

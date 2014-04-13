@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="0dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="3dp"
+        android:textStyle="bold"
+        android:gravity="center_vertical"
+        android:layout_alignParentLeft="true" />
+
+    <TextView
+        android:id="@+id/bikes"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"
+        />
+    <TextView
+        android:id="@+id/parking"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"/>
+    <!--
+    <LinearLayout
+        android:id="@+id/num_col"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="2"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="8dp">
+        <TextView
+            android:id="@+id/bikes"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/parking"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+    </LinearLayout>-->
+
+    <ImageView
+        android:src="@drawable/ic_bike"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@id/bikes"/>
+    <ImageView
+        android:src="@drawable/ic_parking"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:paddingTop="7dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@id/parking"/>
+    <!--
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="2"
+        android:layout_toLeftOf="@id/num_col"
+        android:layout_marginRight="8dp">
+        <ImageView
+            android:src="@drawable/ic_bike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"/>
+        <ImageView
+            android:src="@drawable/ic_parking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="2dp"
+            android:layout_gravity="center"/>
+        /*
+        <TextView
+            android:id="@+id/bikes"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="6dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/parking"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+        */
+    </LinearLayout>
+    -->
+</RelativeLayout>

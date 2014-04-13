@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="transparent">#00000000</color>
+    <color name="grass_green">#99E64D</color>
+    <color name="sky_blue">#87CEEB</color>
+    <color name="deep_sky_blue">#00BFFF</color>
+    <color name="light_sky_bule">#87CEFA</color>
+    <color name="sapphire">#082567</color>
+</resources>

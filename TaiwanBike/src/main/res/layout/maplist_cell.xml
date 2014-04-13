@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="0dp">
+
+    <TextView android:id="@+id/site_id"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:visibility="gone"/>
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="3dp"
+        android:textStyle="bold"
+        android:gravity="center_vertical"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"/>
+    <TextView android:id="@+id/distance"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceSmall"
+              android:layout_below="@id/title"
+              android:layout_alignLeft="@id/title"
+              android:layout_marginTop="3dp"
+              android:text="@string/distance"/>
+    <TextView android:id="@+id/distance_value"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceSmall"
+              android:layout_below="@id/title"
+              android:layout_toRightOf="@id/distance"
+              android:layout_alignTop="@id/distance"
+              android:text="@string/distance_hint"
+              android:textColor="#0000FF"/>
+    <TextView
+            android:id="@+id/bikes"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textAlignment="textEnd"
+            android:layout_marginTop="3dp"
+            android:layout_marginRight="7dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            />
+    <ImageView android:layout_width="30dp"
+               android:layout_height="30dp"
+               android:src="@drawable/ic_bike"
+               android:scaleType="centerInside"
+               android:layout_toLeftOf="@id/bikes"
+               android:layout_alignParentTop="true"/>
+
+    <!-- drawer width 260dp -->
+    <RelativeLayout
+        android:id="@+id/sub_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/distance"
+        android:layout_marginLeft="13dp"
+        android:layout_marginTop="3dp">
+        <!-- android:visibility="gone" -->
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:lines="4"
+            android:layout_gravity="start"
+            android:ellipsize="marquee"/>
+        <!--
+        <TextView
+            android:id="@+id/bikes"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:textStyle="bold"
+            />
+        -->
+        <TextView
+            android:id="@+id/parking"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="center"
+            android:textAlignment="textEnd"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"/>
+
+        <ImageView android:layout_width="25dp"
+                   android:layout_height="25dp"
+                   android:layout_marginTop="4dp"
+                   android:src="@drawable/ic_parking"
+                   android:scaleType="centerInside"
+                   android:gravity="center_vertical"
+                   android:layout_toLeftOf="@id/parking"
+                   android:layout_alignParentTop="true"/>
+    </RelativeLayout>
+    <!--
+    <TextView
+        android:id="@+id/bikes"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"
+        />
+    <TextView
+        android:id="@+id/parking"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"/>
+
+    <ImageView
+        android:src="@drawable/ic_bike"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@id/bikes"/>
+    <ImageView
+        android:src="@drawable/ic_parking"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:paddingRight="7dp"
+        android:paddingTop="7dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@id/parking"/>
+    -->
+
+</RelativeLayout>

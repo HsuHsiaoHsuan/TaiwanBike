@@ -28,6 +28,55 @@
         <meta-data android:name="com.google.android.maps.v2.API_KEY"
                    android:value="AIzaSyCi6zpfQw7JuUMz-xTLFtT4l8k_BV9IYnM"/>
 
+        <activity android:name=".FunnyActivity"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".BikeStationMapActivity"
+            android:label="@string/app_name"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|layoutDirection"
+            android:uiOptions="splitActionBarWhenNarrow">
+
+        </activity>
     </application>
 
 </manifest>
+    <!-- version Code 1, version Name 0.9, 2014-3-3 -->
+    <!-- first relase -->
+    <!-- things should be done in the future:
+         1. auto update option
+         2. desktop widget , jusk like clock
+         3. combint Kaohsiung City Public Bike web site info.
+         4. add data cache
+         5. add Rader to detect n-meter stations
+         6. search on list
+         7. should have favor site on Map Mode
+    -->
+
+    <!-- version Code 2, version Name 1.0, 2014-3-4 -->
+    <!-- 1. search function on list all
+         2. if no favor site, will show R.string.no_data
+         3. refresh button will collapse search view if search view is opening.
+    -->
+    <!-- version Code 3, version name 1.1, 2014-3-9 -->
+    <!-- 1. remove list mode
+         2. redraw icon
+         3. redesign list on map mode
+    -->
+    <!-- version Code 4, version name 1.5, 2014-3-17 -->
+    <!--
+        1. add navigation
+    -->
+    <!-- version Code 5, version name 1.6, 2014-3-18 -->
+    <!--
+        1. add Taipei
+        2. nename to 'Taiwan Bike'
+    -->
+    <!-- version Code 6, version name 1.6.1, 2014-3-19 -->
+    <!--
+        1. UI improved, add close drawer icon
+    -->
