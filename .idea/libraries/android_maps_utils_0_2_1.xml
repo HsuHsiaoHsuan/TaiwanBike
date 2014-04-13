@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="android-maps-utils-0.2.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/TaiwanBike/build/exploded-bundles/ComGoogleMapsAndroidAndroidMapsUtils021.aar/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/TaiwanBike/build/exploded-bundles/ComGoogleMapsAndroidAndroidMapsUtils021.aar/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
