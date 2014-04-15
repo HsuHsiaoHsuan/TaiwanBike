@@ -11,6 +11,8 @@ import android.widget.Filterable;
 import android.widget.TextView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
+import idv.funnybrain.bike.data.IStation;
+import idv.funnybrain.bike.database.DBHelper;
 
 import java.util.ArrayList;
 import java.util.List;

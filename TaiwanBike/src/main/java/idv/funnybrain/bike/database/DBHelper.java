@@ -1,4 +1,4 @@
-package idv.funnybrain.bike;
+package idv.funnybrain.bike.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,16 +9,16 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
- * Created by Freeman on 2014/3/17.
+ * Created by Freeman on 2014/2/16.
  */
-public class DBHelper_Taipei extends SQLiteOpenHelper {
-    private static final String TAG = "DBHelper_Taipei";
+public class DBHelper extends SQLiteOpenHelper {
+    private static final String TAG = "DBHelper";
     private static final boolean D = false;
 
     //private static final String DB_PATH = "/data/data/idv.funnybrain.bike/databases/";
-    private static final String DB_NAME = "station_taipei.db";
+    private static final String DB_NAME = "station.db";
     private static final int DB_VERSION = 1;
-    public static final String DB_TABLE = "bike_taipei";
+    public static final String DB_TABLE = "bike";
     public static final String DB_COL_ID = "_id";
     public static final String DB_COL_STATION_ID = "station_id";
 
@@ -32,7 +32,7 @@ public class DBHelper_Taipei extends SQLiteOpenHelper {
 
     private SQLiteDatabase sqLiteDatabase = null;
 
-    public DBHelper_Taipei(Context context) {
+    public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
         if(D) {
             Log.d(TAG, "constructor");

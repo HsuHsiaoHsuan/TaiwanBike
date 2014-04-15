@@ -1,7 +1,8 @@
-package idv.funnybrain.bike;
+package idv.funnybrain.bike.data;
 
 import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
+import idv.funnybrain.bike.Utils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -101,14 +102,14 @@ public class JsonParser_Direction {
     public static class Steps {
         HashMap<String, String> distance = new HashMap<String, String>();
         HashMap<String, String> duration = new HashMap<String, String>();
-        HashMap<String, String> end_location = new HashMap<String, String>();
-        String html_instructions = "";
+        public static HashMap<String, String> end_location = new HashMap<String, String>();
+        public static String html_instructions = "";
         HashMap<String, String> polyline = new HashMap<String, String>();
-        HashMap<String, String> start_location = new HashMap<String, String>();
+        public static HashMap<String, String> start_location = new HashMap<String, String>();
         List<Steps> steps_transit_only = null;
         Transit_Details transit_details = null;
 
-        String travel_mode = "";
+        public static String travel_mode = "";
 
         public Steps(JSONObject object) {
             try {

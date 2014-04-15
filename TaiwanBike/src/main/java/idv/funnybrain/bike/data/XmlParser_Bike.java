@@ -1,9 +1,11 @@
-package idv.funnybrain.bike;
+package idv.funnybrain.bike.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 import android.util.Pair;
+import idv.funnybrain.bike.Utils;
+import idv.funnybrain.bike.data.IStation;
 import nu.xom.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;

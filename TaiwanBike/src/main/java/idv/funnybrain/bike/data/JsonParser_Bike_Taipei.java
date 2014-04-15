@@ -1,6 +1,8 @@
-package idv.funnybrain.bike;
+package idv.funnybrain.bike.data;
 
 import android.util.Log;
+import idv.funnybrain.bike.Utils;
+import idv.funnybrain.bike.data.IStation;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

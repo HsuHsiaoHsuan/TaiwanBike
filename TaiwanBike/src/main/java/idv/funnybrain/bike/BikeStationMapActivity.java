@@ -26,6 +26,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.*;
+import idv.funnybrain.bike.data.IStation;
+import idv.funnybrain.bike.data.JsonParser_Bike_Taipei;
+import idv.funnybrain.bike.data.JsonParser_Direction;
+import idv.funnybrain.bike.data.XmlParser_Bike;
+import idv.funnybrain.bike.database.DBHelper;
+import idv.funnybrain.bike.database.DBHelper_Taipei;
 import org.jsoup.Jsoup;
 
 import java.util.*;

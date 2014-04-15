@@ -1,4 +1,4 @@
-package idv.funnybrain.bike;
+package idv.funnybrain.bike.data;
 
 /**
  * Created by Freeman on 2014/3/17.
