@@ -12,13 +12,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
-import android.view.*;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.*;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.*;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -26,6 +28,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.*;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.ClusterManager;
 import idv.funnybrain.bike.data.IStation;
 import idv.funnybrain.bike.data.JsonParser_Bike_Taipei;
 import idv.funnybrain.bike.data.JsonParser_Direction;
@@ -39,57 +43,75 @@ import java.util.*;
 /**
  * Created by Freeman on 2014/2/18.
  */
-public class BikeStationMapActivity extends FragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks,
+public class BikeStationMapActivity extends SherlockFragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener {
+
+    // ---- constants START ----
     private static final boolean D = true;
     private static final String TAG = "BikeStationMapActivity";
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    private final Utils utils = new Utils();
+    static final int[] marker_num_array = {
+            R.drawable.ic_marker_bike_0_v2,
+            R.drawable.ic_marker_bike_1_v2,
+            R.drawable.ic_marker_bike_2_v2,
+            R.drawable.ic_marker_bike_3_v2,
+            R.drawable.ic_marker_bike_4_v2,
+            R.drawable.ic_marker_bike_5_v2,
+            R.drawable.ic_marker_bike_6_v2,
+            R.drawable.ic_marker_bike_7_v2,
+            R.drawable.ic_marker_bike_8_v2,
+            R.drawable.ic_marker_bike_9_v2,
+            R.drawable.ic_marker_bike_9_plus_v2
+    };
 
-    private GoogleMap mMap;
+    static final int[] marker_favor_num_array = {
+            R.drawable.ic_marker_favor_0_v2,
+            R.drawable.ic_marker_favor_1_v2,
+            R.drawable.ic_marker_favor_2_v2,
+            R.drawable.ic_marker_favor_3_v2,
+            R.drawable.ic_marker_favor_4_v2,
+            R.drawable.ic_marker_favor_5_v2,
+            R.drawable.ic_marker_favor_6_v2,
+            R.drawable.ic_marker_favor_7_v2,
+            R.drawable.ic_marker_favor_8_v2,
+            R.drawable.ic_marker_favor_9_v2,
+            R.drawable.ic_marker_favor_9_plus_v2
+    };
+    // ---- constants END ----
 
+    // ---- local variable START ----
     private static int MAP_SOURCE_MODE = 1; // 0 for nothing, 1 for Kaohsiung, 2 for Taipei, 3 for both.
-
-    //private static List<Marker> station_marker;
     private static HashMap<String, Marker> station_marker_hashmap = new HashMap<String, Marker>(); // for all(maybe Kaohsiung + Taipei)
-    //private static SparseArray station_marker_array = new SparseArray();
-
-    //static List<XmlParser_Bike.Station> station_list = new ArrayList<XmlParser_Bike.Station>(); // Kaohsiung City
     static List<IStation> station_list = new ArrayList<IStation>();
     static HashMap<String, IStation> station_hashmap = new HashMap<String, IStation>();
+    private static List<IXmlDownloader> listener = new ArrayList<IXmlDownloader>();
 
     private Handler handler;
     private final int MSG_DOWNLOAD_OK = 999;
-
-    // for DrawerLayout
-    //private String[] mStationTitles;
+    private GoogleMap mMap;
+    private ClusterManager<MyItem> mClusterManager;
+    private LocationClient mLocationClient;
+    // -- for DrawerLayout START --
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ListView mDrawerListRight;
     private ActionBarDrawerToggle mDrawerToggle;
-
-    private static List<IXmlDownloader> listener = new ArrayList<IXmlDownloader>();
-
-    private final static int
-            CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-    private LocationClient mLocationClient;
-
-    //private boolean isNetworkOK = false;
+    // -- for DrawerLayout END --
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (utils.checkNetworkAvailable(BikeStationMapActivity.this)) { // available
-                //isNetworkOK = true;
                 if(D) Log.d(TAG, "onReceive, networkAvailable check ok");
                 // FIXME
                 // TODO should check the status, than decide it's true of false
                 getXML(false);
             } else { // not available
-                //isNetworkOK = false;
                 Toast.makeText(BikeStationMapActivity.this, R.string.check_netowrk, Toast.LENGTH_LONG).show();
             }
         }
     };
-
-    SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+    private SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
         @Override
         public boolean onQueryTextSubmit(String query) {
             if(D) Log.d(TAG, "onQueryTextSubmit: " + query);
@@ -104,42 +126,10 @@ public class BikeStationMapActivity extends FragmentActivity implements GooglePl
             return true;
         }
     };
-
+    // ---- local variable END ----
     private BikeStationMapActivity self;
-
-    private final Utils utils = new Utils();
-
     private boolean isNavMode = false;
-
     private Menu myMenu;
-
-    final int[] marker_num_array = {
-            R.drawable.ic_marker_bike_0_v2,
-            R.drawable.ic_marker_bike_1_v2,
-            R.drawable.ic_marker_bike_2_v2,
-            R.drawable.ic_marker_bike_3_v2,
-            R.drawable.ic_marker_bike_4_v2,
-            R.drawable.ic_marker_bike_5_v2,
-            R.drawable.ic_marker_bike_6_v2,
-            R.drawable.ic_marker_bike_7_v2,
-            R.drawable.ic_marker_bike_8_v2,
-            R.drawable.ic_marker_bike_9_v2,
-            R.drawable.ic_marker_bike_9_plus_v2
-    };
-
-    final int[] marker_favor_num_array = {
-            R.drawable.ic_marker_favor_0_v2,
-            R.drawable.ic_marker_favor_1_v2,
-            R.drawable.ic_marker_favor_2_v2,
-            R.drawable.ic_marker_favor_3_v2,
-            R.drawable.ic_marker_favor_4_v2,
-            R.drawable.ic_marker_favor_5_v2,
-            R.drawable.ic_marker_favor_6_v2,
-            R.drawable.ic_marker_favor_7_v2,
-            R.drawable.ic_marker_favor_8_v2,
-            R.drawable.ic_marker_favor_9_v2,
-            R.drawable.ic_marker_favor_9_plus_v2
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -777,158 +767,6 @@ public class BikeStationMapActivity extends FragmentActivity implements GooglePl
             ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
         }
     }
-
-
-
-//        // setting left extra info - start
-//        Iterator it = station_marker_hashmap.entrySet().iterator();
-//        while(it.hasNext()) {
-//            final Map.Entry pairs = (Map.Entry)it.next();
-//            if(((Marker)pairs.getValue()).equals(marker)) {
-//                final String stationTitle = marker.getTitle();
-//
-//                if(MAP_SOURCE_MODE == 2) { // taipei
-//
-//                    DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-//                    if(dbHelper_taipei.query(pairs.getKey().toString())) { // if it's favor one
-////                        setupFavorControl_Taipei(pairs, false);
-//                        ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
-//                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-//                                int result = dbHelper_taipei.delete(pairs.getKey().toString());
-//                                if(result > 0) {
-//                                    //System.out.println("refreshFavorMarker(pairs.getKey().toString(), false);");
-//                                    refreshFavorMarker(pairs.getKey().toString(), false);
-//                                }
-//                            }
-//                        });
-//                    } else { // it's not favor one
-////                        setupFavorControl_Taipei(pairs, true);
-//                        ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-//                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-//                                ContentValues values = new ContentValues();
-//                                values.put(DBHelper_Taipei.DB_COL_STATION_ID, pairs.getKey().toString());
-//                                long result = dbHelper_taipei.insert(values);
-//                                if (result > 0) {
-//                                    //System.out.println("refreshFavorMarker(pairs.getKey().toString(), true);");
-//                                    refreshFavorMarker(pairs.getKey().toString(), true);
-//                                }
-//                            }
-//                        });
-//                    }
-//
-//                } else { // kaohsiung
-//                    DBHelper dbHelper = new DBHelper(self);
-//                    if(dbHelper.query(pairs.getKey().toString())) {
-////                        setupFavorControl(pairs, false);
-//                        ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
-//                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                DBHelper dbHelper = new DBHelper(self);
-//                                int result = dbHelper.delete(pairs.getKey().toString());
-//                                if(result > 0) {
-//                                    refreshFavorMarker(pairs.getKey().toString(), false);
-//                                }
-//                            }
-//                        });
-//                    } else {
-////                        setupFavorControl(pairs, true);
-//                        ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-//                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                ContentValues values = new ContentValues();
-//                                values.put(DBHelper_Taipei.DB_COL_STATION_ID, pairs.getKey().toString());
-//                                DBHelper dbHelper = new DBHelper(self);
-//                                long result = dbHelper.insert(values);
-//                                if (result > 0) {
-//                                    refreshFavorMarker(pairs.getKey().toString(), true);
-//                                }
-//                            }
-//                        });
-//                    }
-//                }
-//                // TODO FIXME
-//                if(isNavMode) {
-//                    mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setVisibility(View.GONE);
-//                    mDrawerLayout.findViewById(R.id.extraInfo_nav_exit).setVisibility(View.VISIBLE);
-//                } else {
-//                    mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setVisibility(View.VISIBLE);
-//                    mDrawerLayout.findViewById(R.id.extraInfo_nav_exit).setVisibility(View.GONE);
-//                }
-//
-//                final LatLng markerLatLng = marker.getPosition();
-//                // setting left side extra info panel - start
-//                // navigation -walk
-//                mDrawerLayout.findViewById(R.id.extraInfo_walk).setOnClickListener(
-//                        new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-//                                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
-//                                            markerLatLng,
-//                                            Utils.travelModeWalking);
-//                                    if(D) { Log.d(TAG, "onClick, walk, conn: " + webConn); }
-//                                    setProgressBarIndeterminateVisibility(true);
-//                                    new DownloadJsonTask_Direction().execute(webConn, stationTitle);
-//                                } else {
-//                                    //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
-//                                    showNoCurrentLocationToast();
-//                                }
-//                            }
-//                        }
-//                );
-//                // navigation -driving
-//                mDrawerLayout.findViewById(R.id.extraInfo_driving).setOnClickListener(
-//                        new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-//                                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
-//                                            markerLatLng,
-//                                            Utils.travelModeDriving);
-//                                    if(D) { Log.d(TAG, "onClick, driving, conn: " + webConn); }
-//                                    setProgressBarIndeterminateVisibility(true);
-//                                    new DownloadJsonTask_Direction().execute(webConn, stationTitle);
-//                                } else {
-//                                    //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
-//                                    showNoCurrentLocationToast();
-//                                }
-//                            }
-//                        }
-//                );
-//                // navigation -public transit
-//                mDrawerLayout.findViewById(R.id.extraInfo_public_trans).setOnClickListener(
-//                        new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-//                                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
-//                                            markerLatLng,
-//                                            Utils.travelModeTransit);
-//                                    if(D) { Log.d(TAG, "onClick, transit, conn: " + webConn); }
-//                                    setProgressBarIndeterminateVisibility(true);
-//                                    new DownloadJsonTask_Direction().execute(webConn, stationTitle);
-//                                } else {
-//                                    //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
-//                                    showNoCurrentLocationToast();
-//                                }
-//                            }
-//                        }
-//                );
-//                // setting left side extra info panel - end
-//
-//                break;
-//            }
-//        }
-//        mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.VISIBLE); // show info window and extra info area
-//    }
 
     private void setupFavorControl(final Map.Entry pairs, boolean isAddMode) { // Kaohsiung
         if(isAddMode) { // Add
@@ -1580,20 +1418,7 @@ public class BikeStationMapActivity extends FragmentActivity implements GooglePl
     }
     // get current location - end
 
-    // use marker clusterer - start
-    /*public class MyItem implements ClusterItem {
-        private final LatLng mPosition;
 
-        public MyItem(double lat, double lng) {
-            mPosition = new LatLng(lat, lng);
-        }
-
-        @Override
-        public LatLng getPosition() {
-            return mPosition;
-        }
-    }*/
-    // usr marker clusterer - end
 
     // count distance - start
     private String formatNumber(double distance) {
@@ -1618,4 +1443,21 @@ public class BikeStationMapActivity extends FragmentActivity implements GooglePl
         Toast.makeText(self, getString(R.string.distance_hint), Toast.LENGTH_SHORT).show();
     }
     // no current location alert - end
+
+    // ---- inner class START ----
+    // use marker clusterer - start
+    public class MyItem implements ClusterItem {
+        private final LatLng mPosition;
+
+        public MyItem(double lat, double lng) {
+            mPosition = new LatLng(lat, lng);
+        }
+
+        @Override
+        public LatLng getPosition() {
+            return mPosition;
+        }
+    }
+    // usr marker clusterer - end
+    // ---- inner class END ----
 }
