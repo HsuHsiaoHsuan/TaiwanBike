@@ -36,7 +36,7 @@
               android:layout_toRightOf="@id/distance"
               android:layout_alignTop="@id/distance"
               android:text="@string/distance_hint"
-              android:textColor="#0000FF"/>
+              /><!-- android:textColor="#0000FF" -->
     <TextView
             android:id="@+id/bikes"
             android:layout_width="40dp"
@@ -63,8 +63,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/distance"
-        android:layout_marginLeft="13dp"
-        android:layout_marginTop="3dp">
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="3dp">
         <!-- android:visibility="gone" -->
         <TextView
             android:id="@+id/address"
@@ -73,28 +73,20 @@
             android:lines="4"
             android:layout_gravity="start"
             android:ellipsize="marquee"/>
-        <!--
-        <TextView
-            android:id="@+id/bikes"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:gravity="center"
-            android:textStyle="bold"
-            />
-        -->
         <TextView
             android:id="@+id/parking"
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="7dp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_marginRight="7dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:gravity="center"
             android:textAlignment="textEnd"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"/>
 
-        <ImageView android:layout_width="25dp"
-                   android:layout_height="25dp"
+        <ImageView android:layout_width="30dp"
+                   android:layout_height="30dp"
                    android:layout_marginTop="4dp"
                    android:src="@drawable/ic_parking"
                    android:scaleType="centerInside"

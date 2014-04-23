@@ -2,7 +2,6 @@ package idv.funnybrain.bike.data;
 
 import android.util.Log;
 import idv.funnybrain.bike.Utils;
-import idv.funnybrain.bike.data.IStation;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,17 +20,20 @@ import java.util.List;
 /**
  * Created by Freeman on 2014/3/17.
  */
-public class JsonParser_Bike_Taipei {
+public class JsonParser_Bike_Taipei implements IParser {
     private static final boolean D = false;
     private static final String TAG = "JsonParser_Bike_Taipei";
-    private final String resultFromTaipeiGovernment;
-    private final List<IStation> station_list;
-    private final HashMap<String, IStation> station_hashmap;
+    private String resultFromTaipeiGovernment;
+    private List<IStation> station_list;
+    private HashMap<String, IStation> station_hashmap;
 
     public JsonParser_Bike_Taipei() {
         station_list = new ArrayList<IStation>();
         station_hashmap = new HashMap<String, IStation>();
+    }
 
+    @Override
+    public void downloadData() {
         InputStream inputStream = null;
         HttpURLConnection httpURLConnection = null;
         String data = "";
@@ -74,9 +76,9 @@ public class JsonParser_Bike_Taipei {
         }
     }
 
-    public List<IStation> getStations() {
-        return station_list;
-    }
+//    public List<IStation> getStations() {
+//        return station_list;
+//    }
 
     public HashMap<String, IStation> getStationHashMap() {
         return station_hashmap;

@@ -30,12 +30,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.*;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
-import idv.funnybrain.bike.data.IStation;
-import idv.funnybrain.bike.data.JsonParser_Bike_Taipei;
-import idv.funnybrain.bike.data.JsonParser_Direction;
-import idv.funnybrain.bike.data.XmlParser_Bike;
+import idv.funnybrain.bike.data.*;
 import idv.funnybrain.bike.database.DBHelper;
 import idv.funnybrain.bike.database.DBHelper_Taipei;
+import idv.funnybrain.bike.database.IDBHelper;
 import org.jsoup.Jsoup;
 
 import java.util.*;
@@ -83,7 +81,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     // ---- local variable START ----
     private static int MAP_SOURCE_MODE = 1; // 0 for nothing, 1 for Kaohsiung, 2 for Taipei, 3 for both.
     private static HashMap<String, Marker> station_marker_hashmap = new HashMap<String, Marker>(); // for all(maybe Kaohsiung + Taipei)
-    static List<IStation> station_list = new ArrayList<IStation>();
+    //static List<IStation> station_list = new ArrayList<IStation>();
     static HashMap<String, IStation> station_hashmap = new HashMap<String, IStation>();
     private static List<IXmlDownloader> listener = new ArrayList<IXmlDownloader>();
 
@@ -126,10 +124,33 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
             return true;
         }
     };
-    // ---- local variable END ----
+    private GoogleMap.OnMarkerClickListener markerClickListener = new GoogleMap.OnMarkerClickListener() {
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            //mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+            LatLng position = marker.getPosition();
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+            if(selected_place == null) {
+                selected_place = mMap.addCircle(new CircleOptions()
+                                                    .center(position)
+                                                    .radius(10)
+                                                    .strokeColor(Color.TRANSPARENT)
+                                                    .strokeWidth(0f)
+                                                    .fillColor(Color.BLUE));
+            } else {
+                selected_place.setCenter(position);
+            }
+            setupExtras(marker.getTitle());
+            return true;
+        }
+    };
     private BikeStationMapActivity self;
     private boolean isNavMode = false;
     private Menu myMenu;
+    private IDBHelper dbHelper;
+    private IParser parser;
+    private Circle selected_place;
+    // ---- local variable END ----
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,15 +159,22 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         setContentView(R.layout.activity_bikemap);
 
         MAP_SOURCE_MODE = (new Utils()).getMapSourceMode(this);
-        //Intent intent = getIntent();
-        //MAP_SOURCE_MODE = intent.getIntExtra("MODE", 1);
 
         Intent intent = getIntent();
         int tmp = intent.getIntExtra("MODE", 9);
-        if(tmp != 9) { MAP_SOURCE_MODE = tmp; } else {
+        if(tmp != 9) {
+            MAP_SOURCE_MODE = tmp;
+        } else {
             MAP_SOURCE_MODE = (new Utils()).getMapSourceMode(this);
         }
 
+        if(MAP_SOURCE_MODE == 1) {
+            dbHelper = new DBHelper(this);
+            parser = new XmlParser_Bike();
+        } else {
+            dbHelper = new DBHelper_Taipei(this);
+            parser = new JsonParser_Bike_Taipei();
+        }
 
         self = this;
 
@@ -155,8 +183,6 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
-        //mDrawerLayoutRight = (DrawerLayout) findViewById(R.id.right_drawer);
-        //mDrawerLayoutRight.setDrawerShadow(R.drawable.drawer_shadow_right, Gravity.START);
         mDrawerListRight = (ListView) findViewById(R.id.right_drawer_list);
 
         // disable Toggle start
@@ -168,7 +194,6 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                //supportInvalidateOptionsMenu();
 
                 if(mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
                     myMenu.getItem(0).setIcon(R.drawable.ic_close_menu_left);
@@ -207,30 +232,32 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     case MSG_DOWNLOAD_OK:
                         if(D) Log.d(TAG, "handlMessage, I get message!");
                         Toast.makeText(BikeStationMapActivity.this, R.string.update_ok, Toast.LENGTH_LONG).show();
-                        mMap.clear();
+                        //mMap.clear();
 
                         if(D) Log.d(TAG, "station_list length: " + station_hashmap.size());
                         Iterator<Map.Entry<String, IStation>> iterator = station_hashmap.entrySet().iterator();
                         while(iterator.hasNext()) {
                             Map.Entry<String, IStation> entry = iterator.next();
-                            LatLng tmpLatLng = new LatLng(Double.valueOf(entry.getValue().getLAT()),
-                                                          Double.valueOf(entry.getValue().getLON()));
-
+                            String entry_idx = entry.getKey();
+                            IStation entry_station = entry.getValue();
                             boolean isFavor = false;
-                            if(MAP_SOURCE_MODE == 2) { // taipei
-                                DBHelper_Taipei db = new DBHelper_Taipei(self);
-                                if(db.query(entry.getValue().getID())) { isFavor = true; }
-                            } else {                   // kaohsiung
-                                DBHelper db = new DBHelper(self);
-                                if(db.query(entry.getValue().getID())) { isFavor = true; }
+                            if(dbHelper.query(entry_station.getID())) { isFavor = true; }
+
+                            if(station_marker_hashmap.get(entry_idx) != null) {
+                                refreshFavorMarker(entry_idx, isFavor);
+                                if(D) Log.d(TAG, "---->1");
+                            } else {
+                                if(D) Log.d(TAG, "---->2");
+                                LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
+                                        Double.valueOf(entry_station.getLON()));
+                                int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
+                                station_marker_hashmap.put(
+                                        entry_idx, mMap.addMarker(
+                                                new MarkerOptions().position(tmpLatLng)
+                                                        .title(entry.getValue().getID())
+                                                        .icon(BitmapDescriptorFactory.fromResource(icon))
+                                                        .draggable(false)));
                             }
-
-                            int icon = getMarkerIcon(Integer.valueOf(entry.getValue().getAVAILABLE_BIKE()), isFavor);
-
-                            mMap.addMarker(new MarkerOptions().position(tmpLatLng)
-                                                              .title(entry.getValue().getID())
-                                                              .icon(BitmapDescriptorFactory.fromResource(icon))
-                                                              .draggable(false));
                         }
 
                         if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) { // get current location
@@ -240,7 +267,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                         mDrawerList.setAdapter(new BikeStationMapListAdapter(getLayoutInflater(), new ArrayList<IStation>(station_hashmap.values())));
                         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-                        setUpMap();
+                        //setUpMap();
 
                         setProgressBarIndeterminateVisibility(false);
                         break;
@@ -288,262 +315,23 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 Log.d(TAG, "selected id: " + ((TextView) view.findViewById(R.id.site_id)).getText() +
                            ", selected text: " + ((TextView) view.findViewById(R.id.title)).getText());
             }
-            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(focusLocation, 15.0f));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(focusLocation, 18.0f));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(focusLocation, 18.0f));
+            if(selected_place == null) {
+                selected_place = mMap.addCircle(new CircleOptions()
+                        .center(focusLocation)
+                        .radius(100)
+                        .fillColor(Color.BLUE));
+            } else {
+                selected_place.setCenter(focusLocation);
+            }
 
             mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.VISIBLE);
+
+            setupFavorControl(selected_station_id);
 
             if(D) Log.d(TAG, "station_marker_hashmap legth: " + station_marker_hashmap.size());
         }
     }
-
-    /**
-    private class MyInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
-        private final View mWindow;
-
-        MyInfoWindowAdapter() {
-            mWindow = getLayoutInflater().inflate(R.layout.map_info_window, null);
-        }
-        @Override
-        public View getInfoWindow(Marker marker) {
-            render(marker, mWindow);
-
-            // setting left extra info - start
-            Iterator it = station_marker_hashmap.entrySet().iterator();
-            while(it.hasNext()) {
-                final Map.Entry pairs = (Map.Entry)it.next();
-                if(((Marker)pairs.getValue()).equals(marker)) {
-                    final String stationTitle = marker.getTitle();
-
-                    if(MAP_SOURCE_MODE == 2) { // taipei
-                        DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-                        if(dbHelper_taipei.query(pairs.getKey().toString())) {
-                            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
-                            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-                                    int result = dbHelper_taipei.delete(pairs.getKey().toString());
-                                    if(result > 0) {
-                                        refreshFavorMarker(pairs.getKey().toString(), false);
-                                    }
-                                }
-                            });
-                        } else {
-                            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-                            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-                                    ContentValues values = new ContentValues();
-                                    values.put(DBHelper_Taipei.DB_COL_STATION_ID, pairs.getKey().toString());
-                                    long result = dbHelper_taipei.insert(values);
-                                    if (result > 0) {
-                                        refreshFavorMarker(pairs.getKey().toString(), true);
-                                    }
-                                }
-                            });
-                        }
-
-                    } else { // kaohsiung
-                        DBHelper dbHelper = new DBHelper(self);
-                        if(dbHelper.query(pairs.getKey().toString())) {
-                            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
-                            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    DBHelper dbHelper = new DBHelper(self);
-                                    int result = dbHelper.delete(pairs.getKey().toString());
-                                    if(result > 0) {
-                                        refreshFavorMarker(pairs.getKey().toString(), false);
-                                    }
-                                }
-                            });
-                        } else {
-                            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-                            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    ContentValues values = new ContentValues();
-                                    values.put(DBHelper_Taipei.DB_COL_STATION_ID, pairs.getKey().toString());
-                                    DBHelper dbHelper = new DBHelper(self);
-                                    long result = dbHelper.insert(values);
-                                    if (result > 0) {
-                                        refreshFavorMarker(pairs.getKey().toString(), true);
-                                    }
-                                }
-                            });
-                        }
-                    }
-//                    DBHelper dbHelper = new DBHelper(self);
-//                    if(dbHelper.query(pairs.getKey().toString())) { // if it's the favor station
-//                        ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
-//                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                DBHelper helper = new DBHelper(self);
-//                                int result = helper.delete(pairs.getKey().toString());
-//                                if(result > 0) {
-//                                    refreshFavorMarker(pairs.getKey().toString(), false);
-//                                }
-//                            }
-//                        });
-//
-//                    } else {
-//                        ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-//                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                ContentValues values = new ContentValues();
-//                                values.put(DBHelper.DB_COL_STATION_ID, pairs.getKey().toString());
-//                                DBHelper helper = new DBHelper(self);
-//                                long result = helper.insert(values);
-//                                if (result > 0) {
-//                                    refreshFavorMarker(pairs.getKey().toString(), true);
-//                                }
-//                            }
-//                        });
-//                    }
-
-                    // TODO FIXME
-                    if(isNavMode) {
-                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setVisibility(View.GONE);
-                        mDrawerLayout.findViewById(R.id.extraInfo_nav_exit).setVisibility(View.VISIBLE);
-                    } else {
-                        mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setVisibility(View.VISIBLE);
-                        mDrawerLayout.findViewById(R.id.extraInfo_nav_exit).setVisibility(View.GONE);
-                    }
-
-                    final LatLng markerLatLng = marker.getPosition();
-                    // setting left side extra info panel - start
-                    mDrawerLayout.findViewById(R.id.extraInfo_walk).setOnClickListener(
-                            new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                                        String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
-                                                                               markerLatLng,
-                                                                               Utils.travelModeWalking);
-                                        if(D) { Log.d(TAG, "onClick, walk, conn: " + webConn); }
-                                        setProgressBarIndeterminateVisibility(true);
-                                        new DownloadJsonTask_Direction().execute(webConn, stationTitle);
-                                    } else {
-                                        //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
-                                        showNoCurrentLocationToast();
-                                    }
-                                }
-                            }
-                    );
-//                    mDrawerLayout.findViewById(R.id.extraInfo_cycling).setOnClickListener(
-//                            new View.OnClickListener() {
-//                                @Override
-//                                public void onClick(View v) {
-//                                    if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-//                                        String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
-//                                                                               markerLatLng,
-//                                                                               Utils.travelModeBicycling);
-//                                        if(D) { Log.d(TAG, "onClick, bicycling, conn: " + webConn); }
-//                                        setProgressBarIndeterminateVisibility(true);
-//                                        new DownloadJsonTask_Direction().execute(webConn);
-//                                    } else {
-//                                        //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
-//                                        showNoCurrentLocationToast();
-//                                    }
-//                                }
-//                    });
-                    mDrawerLayout.findViewById(R.id.extraInfo_driving).setOnClickListener(
-                            new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                                        String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
-                                                                               markerLatLng,
-                                                                               Utils.travelModeDriving);
-                                        if(D) { Log.d(TAG, "onClick, driving, conn: " + webConn); }
-                                        setProgressBarIndeterminateVisibility(true);
-                                        new DownloadJsonTask_Direction().execute(webConn, stationTitle);
-                                    } else {
-                                        //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
-                                        showNoCurrentLocationToast();
-                                    }
-                                }
-                            }
-                    );
-                    mDrawerLayout.findViewById(R.id.extraInfo_public_trans).setOnClickListener(
-                            new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                                        String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
-                                                                               markerLatLng,
-                                                                               Utils.travelModeTransit);
-                                        if(D) { Log.d(TAG, "onClick, transit, conn: " + webConn); }
-                                        setProgressBarIndeterminateVisibility(true);
-                                        new DownloadJsonTask_Direction().execute(webConn, stationTitle);
-                                    } else {
-                                        //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
-                                        showNoCurrentLocationToast();
-                                    }
-                                }
-                            }
-                    );
-                    // setting left side extra info panel - end
-
-                    break;
-                }
-            }
-            mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.VISIBLE); // show info window and extra info area
-            // TODO use TranslateAnimation
-//            TranslateAnimation translateAnimation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, -120,
-//                                                                           Animation.RELATIVE_TO_SELF, 0,
-//                                                                           Animation.RELATIVE_TO_SELF, 0,
-//                                                                           Animation.RELATIVE_TO_SELF, 0);
-//            translateAnimation.setInterpolator(new DecelerateInterpolator());
-//            translateAnimation.setStartTime(3000);
-//            (mDrawerLayout.findViewById(R.id.extraInfo)).startAnimation(translateAnimation);
-//            (mDrawerLayout.findViewById(R.id.extraInfo)).setVisibility(View.VISIBLE);
-            // setting left extra info - end
-
-            return mWindow;
-        }
-
-        @Override
-        public View getInfoContents(Marker marker) {
-            return null;
-        }
-
-        private void render(Marker marker, View view) {
-            // TODO FIXME
-            if(D) Log.d(TAG, "render, station_list size: " + station_list.size());
-
-            //if(!isNavMode) {
-                Iterator it = station_marker_hashmap.entrySet().iterator();
-                while(it.hasNext()) {
-                    Map.Entry pairs = (Map.Entry)it.next();
-                    if(((Marker)pairs.getValue()).equals(marker)) { // if we get the marker that user click
-                        IStation tmp = getStationById(pairs.getKey().toString());
-                        ((TextView) view.findViewById(R.id.station_name)).setText(tmp.getNAME());
-                        if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                            Location location = mLocationClient.getLastLocation();
-                            LatLng currtLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                            LatLng destiLocation = new LatLng(Double.valueOf(tmp.getLAT()), Double.valueOf(tmp.getLON()));
-                            double dist = SphericalUtil.computeDistanceBetween(currtLocation, destiLocation);
-
-                            ((TextView) view.findViewById(R.id.station_distance)).setText(formatNumber(dist));
-                        }
-                        ((TextView) view.findViewById(R.id.popup_bike)).setText(tmp.getAVAILABLE_BIKE());
-                        ((TextView) view.findViewById(R.id.popup_parking)).setText(tmp.getAVAILABLE_PARKING());
-                        if(D) {
-                            Log.d(TAG, "You select marker, ID: " + marker.getId() +
-                                    ", TITLT: " + marker.getTitle() +
-                                    ", SNIPPET: " + marker.getSnippet());
-                        }
-                        break;
-                    }
-                }
-            //}
-        }
-    }*/
 
     @Override
     protected void onStart() {
@@ -584,36 +372,28 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     }
 
     public void refreshFavorMarker(String id, boolean isAdd) {
+        //if(D) { Log.d(TAG, "refreshFavorMarker, id: " + id); }
+        IStation station = station_hashmap.get(id);
+        int num = Integer.valueOf(station.getAVAILABLE_BIKE());
+        Marker selected = station_marker_hashmap.get(id);
+//        if(D) { Log.d(TAG, "refreshFavorMarker, title: " + selected.getTitle() +
+//                                             ", position: " + selected.getPosition()); }
         if(isAdd) {
-            for(IStation is : station_list) {
-                if(is.getID().equals(id)) {
-                    int num = Integer.valueOf(is.getAVAILABLE_BIKE());
-                    int num_icon = marker_favor_num_array[0];
-                    if(num<10) {
-                        num_icon = marker_favor_num_array[num];
-                    } else {
-                        num_icon = marker_favor_num_array[10];
-                    }
-                    station_marker_hashmap.get(id).setIcon(BitmapDescriptorFactory.fromResource(num_icon));
-                    //break;
-                }
+            int num_icon = marker_favor_num_array[0];
+            if(num<10) {
+                num_icon = marker_favor_num_array[num];
+            } else {
+                num_icon = marker_favor_num_array[10];
             }
-            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
+            selected.setIcon(BitmapDescriptorFactory.fromResource(num_icon));
         } else {
-            for(IStation is : station_list) {
-                if(is.getID().equals(id)) {
-                    int num = Integer.valueOf(is.getAVAILABLE_BIKE());
-                    int num_icon = marker_num_array[0];
-                    if(num<10) {
-                        num_icon = marker_num_array[num];
-                    } else {
-                        num_icon = marker_num_array[10];
-                    }
-                    station_marker_hashmap.get(id).setIcon(BitmapDescriptorFactory.fromResource(num_icon));
-                    //break;
-                }
+            int num_icon = marker_num_array[0];
+            if(num<10) {
+                num_icon = marker_num_array[num];
+            } else {
+                num_icon = marker_num_array[10];
             }
-            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
+            selected.setIcon(BitmapDescriptorFactory.fromResource(num_icon));
         }
         //station_marker_hashmap.get(id).showInfoWindow();
     }
@@ -622,6 +402,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     public void onPause() {
         if(D) { Log.d(TAG, "onPause"); }
         super.onPause();
+
+        (new Utils()).setMapPreSourceMode(this, MAP_SOURCE_MODE);
 
         SharedPreferences lastLoction = getSharedPreferences("Location", 0);
         SharedPreferences.Editor editor = lastLoction.edit();
@@ -642,6 +424,9 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if(dbHelper != null) {
+            dbHelper.close();
+        }
     }
 
     @Override
@@ -682,39 +467,58 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 float zoom = setting.getFloat("zoom", 11.0f);
                 String lat = setting.getString("lat", "22.656944");
                 String lon = setting.getString("lon", "120.3575");
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.valueOf(lat), Double.valueOf(lon)), zoom));
+                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.valueOf(lat), Double.valueOf(lon)), zoom));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.valueOf(lat), Double.valueOf(lon)), zoom));
 
                 setUpMap();
             }
         }
     }
 
-//    private void setUpMap(XmlParser_Bike.Station ... stations) {
     private void setUpMap() {
         if(D) Log.d(TAG, "setUpMap");
+        int pre = (new Utils()).getMapPreSourceMode(this);
+        if(station_hashmap.size() >= 0 && (pre == MAP_SOURCE_MODE)) {
+            station_marker_hashmap.clear();
+            Iterator<Map.Entry<String, IStation>> iterator = station_hashmap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, IStation> entry = iterator.next();
+                String entry_idx = entry.getKey();
+                IStation entry_station = entry.getValue();
+                boolean isFavor = false;
+                if (dbHelper.query(entry_station.getID())) {
+                    isFavor = true;
+                }
+
+                    if (D) Log.d(TAG, "---->3");
+                    LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
+                            Double.valueOf(entry_station.getLON()));
+                    int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
+                    station_marker_hashmap.put(
+                            entry_idx, mMap.addMarker(
+                                    new MarkerOptions().position(tmpLatLng)
+                                            .title(entry.getValue().getID())
+                                            .icon(BitmapDescriptorFactory.fromResource(icon))
+                                            .draggable(false)
+                            )
+                    );
+            }
+        }
+
+
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
         //mMap.setInfoWindowAdapter(new MyInfoWindowAdapter());
+
         mMap.setOnMarkerClickListener(markerClickListener);
-//        if(MAP_SOURCE_MODE == 1) {
-//            mMap.setOnInfoWindowClickListener(new myInfoWindowClickListener()); // Taipei no this
-//        }
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
                 mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.GONE);
+                selected_place.setFillColor(Color.TRANSPARENT);
             }
         });
     }
-
-    private GoogleMap.OnMarkerClickListener markerClickListener = new GoogleMap.OnMarkerClickListener() {
-        @Override
-        public boolean onMarkerClick(Marker marker) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
-            setupExtras(marker.getTitle());
-            return true;
-        }
-    };
 
     private void setupExtras(String id) {
         ((RelativeLayout)mDrawerLayout.findViewById(R.id.extraInfo)).setVisibility(View.VISIBLE);
@@ -724,107 +528,32 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     private void setupFavorControl(final String id) {
         System.out.println("setupFavorControl, id: " + id);
         boolean isFavor = false;
-        if (MAP_SOURCE_MODE == 2) { // taipei
-            final DBHelper_Taipei db = new DBHelper_Taipei(self);
-            if (db.query(id)) { // it's a favor
-                ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
-                mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int result = db.delete(id);
-                        if(result > 0) {
-                            refreshFavorMarker(id, false);
-                        }
-                    }
-                });
-            } else { // it's not a favor
-                ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-                mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-                        ContentValues values = new ContentValues();
-                        values.put(DBHelper_Taipei.DB_COL_STATION_ID, id);
-                        long result = dbHelper_taipei.insert(values);
-                        if (result > 0) {
-                            refreshFavorMarker(id, true);
-                        }
-                    }
-                });
-            }
-        } else {// kaohsiung
-            final DBHelper db = new DBHelper(self);
-            if (db.query(id)) { // it's a favor
-                System.out.println("HIHI");
-            } else {
-                System.out.println("YAYA");
-            }
-        }
+        ImageButton ib_favor = (ImageButton) mDrawerLayout.findViewById(R.id.extraInfo_favor_control);
+        isFavor = dbHelper.query(id);
 
         if(isFavor) {
-
+            ib_favor.setImageResource(R.drawable.ic_remove_favor);
+            ib_favor.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int result = dbHelper.delete(id);
+                    if(result > 0) {
+                        refreshFavorMarker(id, false);
+                        setupFavorControl(id);
+                    }
+                }
+            });
         } else {
-            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-        }
-    }
-
-    private void setupFavorControl(final Map.Entry pairs, boolean isAddMode) { // Kaohsiung
-        if(isAddMode) { // Add
-            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_add_favor);
-            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
+            ib_favor.setImageResource(R.drawable.ic_add_favor);
+            ib_favor.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     ContentValues values = new ContentValues();
-                    values.put(DBHelper_Taipei.DB_COL_STATION_ID, pairs.getKey().toString());
-                    DBHelper dbHelper = new DBHelper(self);
+                    values.put(IDBHelper.DB_COL_STATION_ID, id);
                     long result = dbHelper.insert(values);
-                    if (result > 0) {
-                        refreshFavorMarker(pairs.getKey().toString(), true);
-                        setupFavorControl(pairs, false);
-                    }
-                }
-            });
-        } else { // Remove
-            ((ImageButton)mDrawerLayout.findViewById(R.id.extraInfo_favor_control)).setImageResource(R.drawable.ic_remove_favor);
-            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DBHelper dbHelper = new DBHelper(self);
-                    int result = dbHelper.delete(pairs.getKey().toString());
                     if(result > 0) {
-                        refreshFavorMarker(pairs.getKey().toString(), false);
-                        setupFavorControl(pairs, true);
-                    }
-                }
-            });
-        }
-    }
-
-    private void setupFavorControl_Taipei(final Map.Entry pairs, boolean isAddMode) { // Taipei
-        if(isAddMode) { // Add
-            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ContentValues values = new ContentValues();
-                    values.put(DBHelper_Taipei.DB_COL_STATION_ID, pairs.getKey().toString());
-                    DBHelper dbHelper = new DBHelper(self);
-                    long result = dbHelper.insert(values);
-                    if (result > 0) {
-                        refreshFavorMarker(pairs.getKey().toString(), true);
-                        setupFavorControl_Taipei(pairs, false);
-                    }
-                }
-            });
-        } else { // Remove
-            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DBHelper_Taipei dbHelper_taipei = new DBHelper_Taipei(self);
-                    int result = dbHelper_taipei.delete(pairs.getKey().toString());
-                    if(result > 0) {
-                        //System.out.println("refreshFavorMarker(pairs.getKey().toString(), false);");
-                        refreshFavorMarker(pairs.getKey().toString(), false);
-                        setupFavorControl_Taipei(pairs, true);
+                        refreshFavorMarker(id, true);
+                        setupFavorControl(id);
                     }
                 }
             });
@@ -849,14 +578,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         protected HashMap<String, IStation> doInBackground(String... inputs) {
             if(D) Log.d(TAG, "DownloadXmlTask - doInBackground");
             try {
-                if(inputs[0].equals("TAIPEI")) {
-                    JsonParser_Bike_Taipei parser = new JsonParser_Bike_Taipei();
-                    return parser.getStationHashMap();
-                } else {
-                    XmlParser_Bike parser = new XmlParser_Bike();
-                    return parser.getStationHashMap();
-                }
-
+                parser.downloadData();
+                return parser.getStationHashMap();
             } catch(Exception e) {
                 if(D) Log.d(TAG, e.toString());
                 return null;
@@ -865,12 +588,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
         @Override
         protected void onPostExecute(HashMap<String, IStation> stationList) {
-            if(station_list != null) {
-                if(D) Log.d(TAG, "stationList length: " + stationList.size() + "station_list size:" + station_list.size());
-            }
-            //station_list = stationList;
             station_hashmap = stationList;
-            if(D) Log.d(TAG, "stationList length: " + stationList.size() + "station_list size:" + station_list.size());
             if((handler != null) && (stationList.size() != 0)) {
                 Message message = new Message();
                 message.what = MSG_DOWNLOAD_OK;
@@ -878,7 +596,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
             }
 
             for(IXmlDownloader ixd: listener) {
-                if(station_list != null) {
+                if(station_hashmap != null) {
                     if(D) Log.d(TAG, "DownloadXmlTask - onPostExecute, OK");
                     ixd.downloadOK(true);
                 } else {
@@ -914,7 +632,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 Toast.makeText(self, R.string.nav_no_route, Toast.LENGTH_SHORT).show();
             }
             if(steps.size() > 0) {
-                mMap.clear();
+                //mMap.clear();
                 String travel_mode = "";
                 for(JsonParser_Direction.Steps s : steps) {
                     polylineOptions = new PolylineOptions();
@@ -1012,7 +730,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
             //mDrawerLayout.findViewById(R.id.extraInfo_nav_exit).setVisibility(View.GONE);
             //mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setVisibility(View.VISIBLE);
             setUpMap();
-            if((handler != null) && (station_list.size() != 0)) {
+            if((handler != null) && (station_hashmap.size() != 0)) {
                 Message message = new Message();
                 message.what = MSG_DOWNLOAD_OK;
                 handler.sendMessage(message);
@@ -1094,7 +812,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
                 getXML(true);
 
-                setIsNavMode(false);
+                //setIsNavMode(false);
                 return true;
             }
         });

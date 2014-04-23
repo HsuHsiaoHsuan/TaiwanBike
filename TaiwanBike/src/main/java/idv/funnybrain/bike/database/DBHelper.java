@@ -11,7 +11,7 @@ import android.util.Log;
 /**
  * Created by Freeman on 2014/2/16.
  */
-public class DBHelper extends SQLiteOpenHelper {
+public class DBHelper extends SQLiteOpenHelper implements IDBHelper{
     private static final String TAG = "DBHelper";
     private static final boolean D = false;
 
@@ -19,8 +19,8 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "station.db";
     private static final int DB_VERSION = 1;
     public static final String DB_TABLE = "bike";
-    public static final String DB_COL_ID = "_id";
-    public static final String DB_COL_STATION_ID = "station_id";
+    //public static final String DB_COL_ID = "_id";
+    //public static final String DB_COL_STATION_ID = "station_id";
 
     private SQLiteDatabase db;
 
@@ -62,7 +62,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }finally {
 
         }
-        db.close();
+        //db.close();
         return result;
     }
 
@@ -71,10 +71,10 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor cursor = db.query(DB_TABLE, new String[] {DB_COL_STATION_ID}, null, null, null, null, null);
         if (cursor != null) {
             cursor.moveToFirst();
-            db.close();
+            //db.close();
             return cursor;
         }
-        db.close();
+        //db.close();
         return null;
     }
 
@@ -87,7 +87,7 @@ public class DBHelper extends SQLiteOpenHelper {
             if(D) Log.d(TAG, "query(id) : cursor not null, count: " + cursor.getCount());
             if(cursor.moveToFirst()) {
                 if(D) Log.d(TAG, "return true");
-                db.close();
+                //db.close();
                 return true;
             } else {
                 if(D) Log.d(TAG, "return false");
@@ -96,7 +96,7 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         } else {
             if(D) Log.d(TAG, "query(id) : cursor null");
-            db.close();
+            //db.close();
             return false;
         }
     }
@@ -106,7 +106,7 @@ public class DBHelper extends SQLiteOpenHelper {
             db = getWritableDatabase();
         }
         int result = db.delete(DB_TABLE, DB_COL_STATION_ID + "=?", new String[]{id});
-        db.close();
+        //db.close();
         return result;
     }
 

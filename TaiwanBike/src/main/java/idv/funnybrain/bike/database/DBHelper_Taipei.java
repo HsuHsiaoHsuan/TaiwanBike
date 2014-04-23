@@ -11,7 +11,7 @@ import android.util.Log;
 /**
  * Created by Freeman on 2014/3/17.
  */
-public class DBHelper_Taipei extends SQLiteOpenHelper {
+public class DBHelper_Taipei extends SQLiteOpenHelper implements IDBHelper {
     private static final String TAG = "DBHelper_Taipei";
     private static final boolean D = false;
 
@@ -19,8 +19,8 @@ public class DBHelper_Taipei extends SQLiteOpenHelper {
     private static final String DB_NAME = "station_taipei.db";
     private static final int DB_VERSION = 1;
     public static final String DB_TABLE = "bike_taipei";
-    public static final String DB_COL_ID = "_id";
-    public static final String DB_COL_STATION_ID = "station_id";
+    //public static final String DB_COL_ID = "_id";
+    //public static final String DB_COL_STATION_ID = "station_id";
 
     private SQLiteDatabase db;
 
@@ -74,7 +74,7 @@ public class DBHelper_Taipei extends SQLiteOpenHelper {
             db.close();
             return cursor;
         }
-        db.close();
+//        db.close();
         return null;
     }
 
@@ -87,16 +87,16 @@ public class DBHelper_Taipei extends SQLiteOpenHelper {
             if(D) Log.d(TAG, "query(id) : cursor not null, count: " + cursor.getCount());
             if(cursor.moveToFirst()) {
                 if(D) Log.d(TAG, "return true");
-                db.close();
+                //db.close();
                 return true;
             } else {
                 if(D) Log.d(TAG, "return false");
-                db.close();
+                //db.close();
                 return false;
             }
         } else {
             if(D) Log.d(TAG, "query(id) : cursor null");
-            db.close();
+            //db.close();
             return false;
         }
     }

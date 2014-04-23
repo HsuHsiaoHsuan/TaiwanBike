@@ -100,7 +100,8 @@
                   android:layout_height="match_parent"
                   android:layout_gravity="left"
                   android:orientation="vertical"
-                  android:background="#C8C8C8C8">
+                  android:background="#A1000000"
+                  ><!-- android:background="#C8C8C8C8" -->
         <!--
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="45dp"
@@ -121,23 +122,21 @@
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
                   android:choiceMode="singleChoice"
-                  android:divider="@android:color/transparent"
-                  android:background="#C8C8C8C8"
                   android:fastScrollEnabled="true"
                   android:smoothScrollbar="true"/>
+        <!-- android:divider="@android:color/transparent" -->
+        <!-- android:background="#C8C8C8C8" -->
     </LinearLayout>
 
     <LinearLayout android:layout_width="300dp"
                   android:layout_height="match_parent"
                   android:layout_gravity="right"
                   android:orientation="vertical"
-                  android:background="#C8C8C8C8">
+                  android:background="#A1000000">
         <ListView android:id="@+id/right_drawer_list"
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
                   android:choiceMode="singleChoice"
-                  android:divider="@android:color/transparent"
-                  android:background="#C8C8C8C8"
                   android:fastScrollEnabled="true"
                   android:smoothScrollbar="true"/>
     </LinearLayout>

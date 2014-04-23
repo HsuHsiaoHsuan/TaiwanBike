@@ -58,6 +58,7 @@ public class Utils {
     public static final String navUNKNOWN_ERROR = "UNKNOWN_ERROR";
 
     private static final String MapSourceMode = "MapSourceMode";
+    private static final String MapPreSourceMode = "MapPreSourceMode";
     private static final String sourceMode = "mode";
 
     public synchronized void setLocation(Location location) {
@@ -95,6 +96,18 @@ public class Utils {
 
     public int getMapSourceMode(Context context) {
         SharedPreferences source_mode = context.getSharedPreferences(MapSourceMode, 0);
+        return source_mode.getInt(sourceMode, 9);
+    }
+
+    public void setMapPreSourceMode(Context context, int mode) {
+        SharedPreferences source_mode = context.getSharedPreferences(MapPreSourceMode, 0);
+        SharedPreferences.Editor editor = source_mode.edit();
+        editor.putInt(sourceMode, mode);
+        editor.commit();
+    }
+
+    public int getMapPreSourceMode(Context context) {
+        SharedPreferences source_mode = context.getSharedPreferences(MapPreSourceMode, 0);
         return source_mode.getInt(sourceMode, 9);
     }
 

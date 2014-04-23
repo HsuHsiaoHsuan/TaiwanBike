@@ -2,7 +2,6 @@ package idv.funnybrain.bike;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.res.Resources;
@@ -22,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import idv.funnybrain.bike.data.IStation;
 import idv.funnybrain.bike.data.XmlParser_Bike;
 import idv.funnybrain.bike.database.DBHelper;
@@ -35,7 +35,7 @@ import java.lang.ref.WeakReference;
 /**
  * Created by freeman on 2014/2/14.
  */
-class BikeStationDetailFragment extends DialogFragment implements IXmlDownloader {
+class BikeStationDetailFragment extends SherlockDialogFragment implements IXmlDownloader {
     private static final boolean D = false;
     private static final String TAG = "BikeStationDetailFragment";
 
@@ -349,21 +349,13 @@ class BikeStationDetailFragment extends DialogFragment implements IXmlDownloader
 //                    }
 //                }
 //            } else {
-                for(IStation s : BikeStationMapActivity.station_list) {
-                    if(D) Log.d(TAG, "ID iterator: " + s.getID());
-                    if (s.getID().equals(id)) {
-                        if(D) Log.d(TAG, "we get same id");
 
-                        bike = s.getAVAILABLE_BIKE();
-                        parking = s.getAVAILABLE_PARKING();
-
-                        Message message = new Message();
-                        message.what = MSG_DOWNLOAD_OK;
-                        BikeStationDetailFragment.this.handler.sendMessage(message);
-                        break;
-                    }
-//                }
-            }
+            IStation s = BikeStationMapActivity.station_hashmap.get(id);
+            bike = s.getAVAILABLE_BIKE();
+            parking = s.getAVAILABLE_PARKING();
+            Message message = new Message();
+            message.what = MSG_DOWNLOAD_OK;
+            BikeStationDetailFragment.this.handler.sendMessage(message);
         }
     }
 

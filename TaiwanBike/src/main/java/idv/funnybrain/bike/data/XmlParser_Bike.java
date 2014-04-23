@@ -5,7 +5,6 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.util.Pair;
 import idv.funnybrain.bike.Utils;
-import idv.funnybrain.bike.data.IStation;
 import nu.xom.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -19,47 +18,15 @@ import java.util.List;
 /**
  * Created by Freeman on 2014/2/12.
  */
-public class XmlParser_Bike {
+public class XmlParser_Bike implements IParser {
     private static final boolean D = false;
     private static final String TAG = "XmlParser_Bike";
-    private final List<IStation> station_list;
-    private final HashMap<String, IStation> station_hashmap;
+    //private List<IStation> station_list;
+    private HashMap<String, IStation> station_hashmap;
 
     public XmlParser_Bike() {
-        station_list = new ArrayList<IStation>();
+        //station_list = new ArrayList<IStation>();
         station_hashmap = new HashMap<String, IStation>();
-
-        try {
-            Builder parser = new Builder();
-            Document document = null;
-            // TODO should I cache the file? maybe good!
-            Utils utils = new Utils();
-
-            HttpPost httpRequest = new HttpPost(Utils.OPENDATA_BIKE);
-            HttpResponse httpResponse = Utils.getHttpClient().execute(httpRequest);
-
-            if(httpResponse.getStatusLine().getStatusCode() == 200) {
-                document = parser.build(Utils.OPENDATA_BIKE);
-            }
-
-            Element root = document.getRootElement(); // tag: BIKEStationData
-            Element root_sec = root.getFirstChildElement("BIKEStation"); // tag: BIKEStation
-            Elements stations = root_sec.getChildElements("Station"); // tag: Station
-
-            for(int x=0; x<stations.size(); x++) {
-                Element station = stations.get(x);
-                station_list.add(getStationItems(station));
-                IStation tmpStation = getStationItems(station);
-                station_hashmap.put(tmpStation.getID(), tmpStation);
-            }
-
-        } catch(ParsingException pe) {
-            if(D) Log.d(TAG, pe.toString());
-            if(D) pe.printStackTrace();
-        } catch(IOException ioe) {
-            if(D) Log.d(TAG, ioe.toString());
-            if(D) ioe.printStackTrace();
-        }
     }
 
     private IStation getStationItems(Element source) {
@@ -272,44 +239,45 @@ public class XmlParser_Bike {
         //public void setAVAILABLE_PARKING(String available_parking) {this.AVAILABLE_PARKING = available_parking;}
         public String getAVAILABLE_PARKING() {return AVAILABLE_PARKING;}
     }
-    /*
-    public static class Station {
-        public final String ID;               // StationID
-        public final String NO;               // StationNO
-        public final String PIC_SMALL;        // StationPic
-        public final String PIC_MEDIUM;       // StationPic2
-        public final String PIC_LARGE;        // StationPic3
-        public final String MAP;              // StationMap
-        public final String NAME;             // StationName
-        public final String ADDRESS;          // StationAddress
-        public final String LAT;              // StationLat
-        public final String LON;              // StationLon
-        public final String DESCRIBE;         // StationDesc
-        public final String AVAILABLE_BIKE;   // StationNums1
-        public final String AVAILABLE_PARKING;// StationNums2
 
-        public Station(String id, String no, String pic_small, String pic_medium, String pic_large, String map,
-                       String name, String address, String lat, String lon, String describe, String available_bike,
-                       String available_parking) {
-            ID = id;
-            NO = no;
-            PIC_SMALL = pic_small;
-            PIC_MEDIUM = pic_medium;
-            PIC_LARGE = pic_large;
-            MAP = map;
-            NAME = name;
-            ADDRESS = address;
-            LAT = lat;
-            LON = lon;
-            DESCRIBE = describe;
-            AVAILABLE_BIKE = available_bike;
-            AVAILABLE_PARKING = available_parking;
+    @Override
+    public void downloadData() {
+        try {
+            Builder parser = new Builder();
+            Document document = null;
+            // TODO should I cache the file? maybe good!
+            Utils utils = new Utils();
+
+            HttpPost httpRequest = new HttpPost(Utils.OPENDATA_BIKE);
+            HttpResponse httpResponse = Utils.getHttpClient().execute(httpRequest);
+
+            if(httpResponse.getStatusLine().getStatusCode() == 200) {
+                document = parser.build(Utils.OPENDATA_BIKE);
+            }
+
+            Element root = document.getRootElement(); // tag: BIKEStationData
+            Element root_sec = root.getFirstChildElement("BIKEStation"); // tag: BIKEStation
+            Elements stations = root_sec.getChildElements("Station"); // tag: Station
+
+            for(int x=0; x<stations.size(); x++) {
+                Element station = stations.get(x);
+                //station_list.add(getStationItems(station));
+                IStation tmpStation = getStationItems(station);
+                station_hashmap.put(tmpStation.getID(), tmpStation);
+            }
+
+        } catch(ParsingException pe) {
+            if(D) Log.d(TAG, pe.toString());
+            if(D) pe.printStackTrace();
+        } catch(IOException ioe) {
+            if(D) Log.d(TAG, ioe.toString());
+            if(D) ioe.printStackTrace();
         }
-    }*/
-
-    public List<IStation> getStations() {
-        return station_list;
     }
+
+//    public List<IStation> getStations() {
+//        return station_list;
+//    }
 
     public HashMap<String, IStation> getStationHashMap() {
         return station_hashmap;
@@ -324,7 +292,7 @@ public class XmlParser_Bike {
 
 
         for(int x=0; x<districts.length; x++) {
-            Iterator<IStation> iterator = station_list.iterator();
+            Iterator<IStation> iterator = station_hashmap.values().iterator();
             List<IStation> tmp = new ArrayList<IStation>();
             if(D) Log.d(TAG, "Districes: " + districts[x]);
             while(iterator.hasNext()) {
@@ -340,11 +308,6 @@ public class XmlParser_Bike {
     }
 
     public IStation getStationById(String id) {
-        Iterator<IStation> iterator = station_list.iterator();
-        while(iterator.hasNext()) {
-            IStation tmpStation = iterator.next();
-            if(tmpStation.getID().equals(id)) return tmpStation;
-        }
-        return null;
+        return station_hashmap.get(id);
     }
 }
