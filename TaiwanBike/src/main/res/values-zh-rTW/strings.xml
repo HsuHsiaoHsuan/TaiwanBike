@@ -41,10 +41,11 @@
     <string name="map_license">Google Play Service 版權宣告</string>
 
     <string name="nav_no_route">抱歉找不到導航路線。</string>
+    <string name="nav_please_leave_first">請先離開導航模式。</string>
 
-    <string name="nav_transit_take">搭 </string>
-    <string name="nav_transit_from"> 從 </string>
-    <string name="nav_transit_to"> 到 </string>
+    <string name="nav_transit_take">搭&#160;&#160;</string>
+    <string name="nav_transit_from">從&#160;&#160;</string>
+    <string name="nav_transit_to">到&#160;&#160;</string>
 
     <string name="back_to_map">回到地圖</string>
     <string name="close_app">關閉程式</string>

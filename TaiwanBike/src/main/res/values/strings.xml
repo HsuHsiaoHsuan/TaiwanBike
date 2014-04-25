@@ -23,9 +23,9 @@
     <string name="drawer_open">Open sites list</string>
     <string name="drawer_close">Close sites list</string>
 
-    <string name="StationName">Name: </string>
-    <string name="StationAddress">Address: </string>
-    <string name="StationDesc">Data: </string>
+    <string name="StationName">Name:&#160;</string>
+    <string name="StationAddress">Address:&#160;</string>
+    <string name="StationDesc">Data:&#160;</string>
     <string name="StationBike">BIKE</string>
     <string name="StationPark">PARKING</string>
 
@@ -41,10 +41,11 @@
     <string name="map_license">Google Play Service License</string>
 
     <string name="nav_no_route">Sorry, no route to your destination.</string>
+    <string name="nav_please_leave_first">Plz leave navigation first.</string>
 
-    <string name="nav_transit_take">Take </string>
-    <string name="nav_transit_from"> from </string>
-    <string name="nav_transit_to"> to </string>
+    <string name="nav_transit_take">Take&#160;&#160;</string>
+    <string name="nav_transit_from">from&#160;&#160;</string>
+    <string name="nav_transit_to">to&#160;&#160;</string>
 
     <string name="back_to_map">Back to map</string>
     <string name="close_app">Close Application</string>

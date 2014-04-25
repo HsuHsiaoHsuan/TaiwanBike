@@ -11,6 +11,8 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
+import java.util.Locale;
+
 /**
  * Created by Freeman on 2014/2/12.
  */
@@ -119,14 +121,21 @@ public class Utils {
         //String avoid = "avoid=tolls|highways|ferries";
         //String region = "region=zh-Hant-TW";
 
+        String tmpLang = Locale.getDefault().getLanguage();
+        if (tmpLang.contains("zh")) {
+            tmpLang = "zh-TW";
+        }
+        String lang = "language=" + tmpLang;
+
+
         String result = "https://maps.googleapis.com/maps/api/directions/json?" +
-                        origin + "&" + destination + "&" + sensor + "&" + mode + "&" + /*avoid + "&" +*/ "key=" + API_KEY;
+                        origin + "&" + destination + "&" + sensor + "&" + mode + "&" + /*avoid + "&" +*/ lang + "&" + "key=" + API_KEY;
 
         if (travelMode.equals(travelModeTransit)) {
             long time = System.currentTimeMillis() / 1000;
             String dep_time = "departure_time=" + String.valueOf(time);
             String result_transit = "https://maps.googleapis.com/maps/api/directions/json?" +
-                    origin + "&" + destination + "&" + sensor + "&" + mode + "&" + dep_time + "&" + "key=" + API_KEY;
+                    origin + "&" + destination + "&" + sensor + "&" + mode + "&" + dep_time + "&" + lang + "&" + "key=" + API_KEY;
             return result_transit;
         }
 

@@ -78,10 +78,8 @@ public class JsonParser_Direction {
                 // legs
                 JSONObject leg_first = legs.getJSONObject(0);
                 JSONObject distance = leg_first.getJSONObject("distance");
-                //String distance_string = distance.getString("text"); // TODO
                 distance_all = distance.getString("text");
                 JSONObject duration = leg_first.getJSONObject("duration");
-                //String duration_string = duration.getString("text"); // TODO
                 time_all = duration.getString("text");
 
 
@@ -95,50 +93,49 @@ public class JsonParser_Direction {
                 Log.d(TAG, "JsonParser_Direction, status: " + status);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
     public static class Steps {
         HashMap<String, String> distance = new HashMap<String, String>();
         HashMap<String, String> duration = new HashMap<String, String>();
-        public static HashMap<String, String> end_location = new HashMap<String, String>();
-        public static String html_instructions = "";
+        private HashMap<String, String> end_location = new HashMap<String, String>();
+        private String html_instructions = "";
         HashMap<String, String> polyline = new HashMap<String, String>();
-        public static HashMap<String, String> start_location = new HashMap<String, String>();
+        private HashMap<String, String> start_location = new HashMap<String, String>();
         List<Steps> steps_transit_only = null;
         Transit_Details transit_details = null;
-
-        public static String travel_mode = "";
+        private String travel_mode;
 
         public Steps(JSONObject object) {
             try {
                 if (D) { Log.d(TAG, "object: " + object.toString()); }
-                JSONObject dist = object.getJSONObject("distance"); if(D) { Log.d(TAG, dist.toString()); }
-                distance.put("text", dist.getString("text")); if(D) { Log.d(TAG, dist.getString("text")); }
-                distance.put("value", dist.getString("value")); if(D) { Log.d(TAG, dist.getString("value")); }
+                JSONObject dist = object.getJSONObject("distance"); if(D) { Log.d(TAG, "distance: " + dist.toString()); }
+                distance.put("text", dist.getString("text")); if(D) { Log.d(TAG, "text: " + dist.getString("text")); }
+                distance.put("value", dist.getString("value")); if(D) { Log.d(TAG, "value: " + dist.getString("value")); }
 
-                JSONObject dur = object.getJSONObject("duration");
-                duration.put("text", dur.getString("text")); if(D) { Log.d(TAG, dur.getString("text")); }
-                duration.put("value", dur.getString("value")); if(D) { Log.d(TAG, dur.getString("value")); }
+                JSONObject dur = object.getJSONObject("duration"); if(D) { Log.d(TAG, "duration: " + dur.toString()); }
+                duration.put("text", dur.getString("text")); if(D) { Log.d(TAG, "text: " + dur.getString("text")); }
+                duration.put("value", dur.getString("value")); if(D) { Log.d(TAG, "value: " + dur.getString("value")); }
 
-                JSONObject end = object.getJSONObject("end_location");
-                end_location.put("lat", end.getString("lat")); if(D) { Log.d(TAG, end.getString("lat")); }
-                end_location.put("lng", end.getString("lng")); if(D) { Log.d(TAG, end.getString("lng")); }
+                JSONObject end = object.getJSONObject("end_location"); if(D) { Log.d(TAG, "end_location:" + end.toString()); }
+                end_location.put("lat", end.getString("lat")); if(D) { Log.d(TAG, "lat: " + end.getString("lat")); }
+                end_location.put("lng", end.getString("lng")); if(D) { Log.d(TAG, "lng: " + end.getString("lng")); }
 
-                html_instructions = object.getString("html_instructions"); if(D) { Log.d(TAG, html_instructions); }
+                html_instructions = object.getString("html_instructions"); if(D) { Log.d(TAG, "html_instructions: " + html_instructions); }
 
                 JSONObject poly = object.getJSONObject("polyline");
-                polyline.put("points", poly.getString("points")); if(D) { Log.d(TAG, poly.getString("points")); }
+                polyline.put("points", poly.getString("points")); if(D) { Log.d(TAG, "points: " + poly.getString("points")); }
 
-                JSONObject start = object.getJSONObject("start_location");
-                start_location.put("lat", start.getString("lat")); if(D) { Log.d(TAG, start.getString("lat")); }
-                start_location.put("lng", start.getString("lng")); if(D) { Log.d(TAG, start.getString("lng")); }
+                JSONObject start = object.getJSONObject("start_location"); if(D) { Log.d(TAG, "start_location: " + start.toString()); }
+                start_location.put("lat", start.getString("lat")); if(D) { Log.d(TAG, "lat: " + start.getString("lat")); }
+                start_location.put("lng", start.getString("lng")); if(D) { Log.d(TAG, "lng: " + start.getString("lng")); }
 
-                travel_mode = object.getString("travel_mode"); if(D) { Log.d(TAG, travel_mode); }
+                travel_mode = object.getString("travel_mode"); if(D) { Log.d(TAG, "travel_mode: " + travel_mode); }
                 //System.out.println("JsonParser travel_mode: " + travel_mode);
             } catch (JSONException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             try {
                 JSONArray steps = object.getJSONArray("steps"); // transit mode only (walking path)
@@ -149,13 +146,29 @@ public class JsonParser_Direction {
                     }
                 }
             } catch(JSONException jsone) {
-                jsone.printStackTrace();
+                //jsone.printStackTrace();
             }
             try {
                 transit_details = new Transit_Details(object.getJSONObject("transit_details"));
             } catch (JSONException jsone) {
-                jsone.printStackTrace();
+                //jsone.printStackTrace();
             }
+        }
+
+        public String getHtml_instructions() {
+            return html_instructions;
+        }
+
+        public String getTravel_mode() {
+            return travel_mode;
+        }
+
+        public HashMap<String, String> getStart_location() {
+            return start_location;
+        }
+
+        public HashMap<String, String> getEnd_location() {
+            return end_location;
         }
 
         public Transit_Details getTransitDetails() { return transit_details; }
@@ -274,7 +287,7 @@ public class JsonParser_Direction {
                 transit_short_name = input.getJSONObject("line").getString("short_name");
                 //System.out.println(transit_short_name);
             } catch (JSONException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
 

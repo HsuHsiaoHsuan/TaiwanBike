@@ -14,6 +14,7 @@ import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -34,7 +35,6 @@ import idv.funnybrain.bike.data.*;
 import idv.funnybrain.bike.database.DBHelper;
 import idv.funnybrain.bike.database.DBHelper_Taipei;
 import idv.funnybrain.bike.database.IDBHelper;
-import org.jsoup.Jsoup;
 
 import java.util.*;
 
@@ -45,7 +45,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         GooglePlayServicesClient.OnConnectionFailedListener {
 
     // ---- constants START ----
-    private static final boolean D = true;
+    private static final boolean D = false;
     private static final String TAG = "BikeStationMapActivity";
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private final Utils utils = new Utils();
@@ -103,53 +103,36 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 if(D) Log.d(TAG, "onReceive, networkAvailable check ok");
                 // FIXME
                 // TODO should check the status, than decide it's true of false
-                getXML(false);
+                if(!isNavMode) { getXML(false); }
             } else { // not available
                 Toast.makeText(BikeStationMapActivity.this, R.string.check_netowrk, Toast.LENGTH_LONG).show();
             }
         }
     };
-    private SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-        @Override
-        public boolean onQueryTextSubmit(String query) {
-            if(D) Log.d(TAG, "onQueryTextSubmit: " + query);
-            ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(query);
-            return true;
-        }
-
-        @Override
-        public boolean onQueryTextChange(String newText) {
-            if(D) Log.d(TAG, "onQueryTextChange: " + newText);
-            ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(newText);
-            return true;
-        }
-    };
+    private SearchView.OnQueryTextListener queryTextListener;
     private GoogleMap.OnMarkerClickListener markerClickListener = new GoogleMap.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker) {
-            //mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
             LatLng position = marker.getPosition();
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-            if(selected_place == null) {
-                selected_place = mMap.addCircle(new CircleOptions()
-                                                    .center(position)
-                                                    .radius(10)
-                                                    .strokeColor(Color.TRANSPARENT)
-                                                    .strokeWidth(0f)
-                                                    .fillColor(Color.BLUE));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(position));
+            if(!isNavMode) {
+                setupExtras(marker.getTitle());
+                return true;
             } else {
-                selected_place.setCenter(position);
+                return false;
             }
-            setupExtras(marker.getTitle());
-            return true;
+            //return true;// if return true, it wont show marker info window.
         }
     };
+
     private BikeStationMapActivity self;
     private boolean isNavMode = false;
     private Menu myMenu;
     private IDBHelper dbHelper;
     private IParser parser;
-    private Circle selected_place;
+    private String selected_station_id = "";
+    private boolean isMapCleared = false;
     // ---- local variable END ----
 
     @Override
@@ -220,9 +203,46 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
         mLocationClient = new LocationClient(this, this, this);
 
-        // setup SearchView
+        // ---- setup SearchView START ----
+        queryTextListener = new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if(D) Log.d(TAG, "onQueryTextSubmit: " + query);
+                ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if(D) Log.d(TAG, "onQueryTextChange: " + newText);
+                ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(newText);
+
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                //仍然有問題，開著程式，然後再開別的程式覆蓋過去，別的程式按BACK關掉，#218會當掉!
+                // 還有9版本沒有SearchView問題也待解決！
+
+                return true;
+            }
+        };
         SearchView searchView = (SearchView) findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(queryTextListener);
+        // ---- setup SearchView END ----
 
         handler = new Handler() {
             @Override
@@ -232,7 +252,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     case MSG_DOWNLOAD_OK:
                         if(D) Log.d(TAG, "handlMessage, I get message!");
                         Toast.makeText(BikeStationMapActivity.this, R.string.update_ok, Toast.LENGTH_LONG).show();
-                        //mMap.clear();
+                        mMap.clear();
+                        station_marker_hashmap.clear();
 
                         if(D) Log.d(TAG, "station_list length: " + station_hashmap.size());
                         Iterator<Map.Entry<String, IStation>> iterator = station_hashmap.entrySet().iterator();
@@ -245,9 +266,9 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
                             if(station_marker_hashmap.get(entry_idx) != null) {
                                 refreshFavorMarker(entry_idx, isFavor);
-                                if(D) Log.d(TAG, "---->1");
+                                //if(D) Log.d(TAG, "---->1");
                             } else {
-                                if(D) Log.d(TAG, "---->2");
+                                //if(D) Log.d(TAG, "---->2");
                                 LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
                                         Double.valueOf(entry_station.getLON()));
                                 int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
@@ -268,6 +289,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
                         //setUpMap();
+                        mMap.setOnMarkerClickListener(markerClickListener);
 
                         setProgressBarIndeterminateVisibility(false);
                         break;
@@ -278,10 +300,13 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
             @Override
             public void onClick(View v) {
                 setIsNavMode(false);
+                mMap.clear();
+                station_marker_hashmap.clear();
             }
         });
-    }
 
+
+    }
 
     private int getMarkerIcon(int num, boolean isFavor) {
         if(isFavor) {
@@ -315,16 +340,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 Log.d(TAG, "selected id: " + ((TextView) view.findViewById(R.id.site_id)).getText() +
                            ", selected text: " + ((TextView) view.findViewById(R.id.title)).getText());
             }
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(focusLocation, 18.0f));
-            if(selected_place == null) {
-                selected_place = mMap.addCircle(new CircleOptions()
-                        .center(focusLocation)
-                        .radius(100)
-                        .fillColor(Color.BLUE));
-            } else {
-                selected_place.setCenter(focusLocation);
-            }
-
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(focusLocation, 18.0f));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(focusLocation, 15.0f));
             mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.VISIBLE);
 
             setupFavorControl(selected_station_id);
@@ -350,7 +367,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         if(D) { Log.d(TAG, "onResume"); }
         super.onResume();
 
-        setUpMapIfNeeded();
+        if(!isNavMode) { setUpMapIfNeeded(); }
         registerReceiver(mConnReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
@@ -490,7 +507,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     isFavor = true;
                 }
 
-                    if (D) Log.d(TAG, "---->3");
+                    //if (D) Log.d(TAG, "---->3");
                     LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
                             Double.valueOf(entry_station.getLON()));
                     int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
@@ -515,21 +532,32 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
             @Override
             public void onMapClick(LatLng latLng) {
                 mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.GONE);
-                selected_place.setFillColor(Color.TRANSPARENT);
+                if(!selected_station_id.equals("")) {
+                    refreshFavorMarker(selected_station_id, dbHelper.query(selected_station_id));
+                }
             }
         });
     }
 
     private void setupExtras(String id) {
         ((RelativeLayout)mDrawerLayout.findViewById(R.id.extraInfo)).setVisibility(View.VISIBLE);
-         setupFavorControl(id);
+        setupFavorControl(id);
     }
 
     private void setupFavorControl(final String id) {
-        System.out.println("setupFavorControl, id: " + id);
+        IStation station = station_hashmap.get(id);
+        ((TextView) mDrawerLayout.findViewById(R.id.extraInfo_name)).setText(station.getNAME());
+        ((TextView) mDrawerLayout.findViewById(R.id.extraInfo_nums_bicycle)).setText(station.getAVAILABLE_BIKE());
+        ((TextView) mDrawerLayout.findViewById(R.id.extraInfo_nums_parking)).setText(station.getAVAILABLE_PARKING());
+
         boolean isFavor = false;
         ImageButton ib_favor = (ImageButton) mDrawerLayout.findViewById(R.id.extraInfo_favor_control);
         isFavor = dbHelper.query(id);
+
+        if(!selected_station_id.equals("")) {
+            refreshFavorMarker(selected_station_id, dbHelper.query(selected_station_id));
+        }
+        selected_station_id = id;
 
         if(isFavor) {
             ib_favor.setImageResource(R.drawable.ic_remove_favor);
@@ -543,6 +571,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     }
                 }
             });
+                station_marker_hashmap.get(id).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_favor));
         } else {
             ib_favor.setImageResource(R.drawable.ic_add_favor);
             ib_favor.setOnClickListener(new View.OnClickListener() {
@@ -557,7 +586,78 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     }
                 }
             });
+            station_marker_hashmap.get(id).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_bike));
         }
+        setupNavControl(id);
+    }
+
+    private void setupNavControl(String id) {
+        Marker tmpMarker = station_marker_hashmap.get(id);
+        final LatLng markerLatLng = tmpMarker.getPosition();
+        final String stationTitle = station_hashmap.get(id).getNAME();
+        mDrawerLayout.findViewById(R.id.extraInfo_walk).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
+                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
+                            markerLatLng,
+                            Utils.travelModeWalking);
+                    if(D) { Log.d(TAG, "onClick, walk, conn: " + webConn); }
+                    setProgressBarIndeterminateVisibility(true);
+                    new DownloadJsonTask_Direction().execute(webConn, stationTitle);
+                } else {
+                    showNoCurrentLocationToast();
+                }
+            }
+        });
+        // bicycle navigation is not available in Taiwan
+//        mDrawerLayout.findViewById(R.id.extraInfo_cycling).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
+//                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
+//                            markerLatLng,
+//                            Utils.travelModeCycling);
+//                    if(D) { Log.d(TAG, "onClick, walk, conn: " + webConn); }
+//                    setProgressBarIndeterminateVisibility(true);
+//                    new DownloadJsonTask_Direction().execute(webConn, stationTitle);
+//                } else {
+//                    showNoCurrentLocationToast();
+//                }
+//            }
+//        });
+        mDrawerLayout.findViewById(R.id.extraInfo_driving).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
+                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
+                            markerLatLng,
+                            Utils.travelModeDriving);
+                    if(D) { Log.d(TAG, "onClick, driving, conn: " + webConn); }
+                    setProgressBarIndeterminateVisibility(true);
+                    new DownloadJsonTask_Direction().execute(webConn, stationTitle);
+                } else {
+                    //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
+                    showNoCurrentLocationToast();
+                }
+            }
+        });
+        mDrawerLayout.findViewById(R.id.extraInfo_public_trans).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
+                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
+                            markerLatLng,
+                            Utils.travelModeTransit);
+                    if(D) { Log.d(TAG, "onClick, transit, conn: " + webConn); }
+                    setProgressBarIndeterminateVisibility(true);
+                    new DownloadJsonTask_Direction().execute(webConn, stationTitle);
+                } else {
+                    //Toast.makeText(self, R.string.distance_hint, Toast.LENGTH_SHORT).show();
+                    showNoCurrentLocationToast();
+                }
+            }
+        });
     }
 
     private synchronized void getXML(boolean isActionBarShowing) {
@@ -622,6 +722,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
         @Override
         protected void onPostExecute(JsonParser_Direction parser) {
+            mMap.clear();
+            station_marker_hashmap.clear();
             //super.onPostExecute(steps);
             if(D) { Log.d(TAG, "DownloadJsonTask_Direction, onPostExecute"); }
             List<JsonParser_Direction.Steps> steps = parser.getAllSteps();
@@ -632,8 +734,13 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 Toast.makeText(self, R.string.nav_no_route, Toast.LENGTH_SHORT).show();
             }
             if(steps.size() > 0) {
-                //mMap.clear();
-                String travel_mode = "";
+
+                if(D) {
+                    for (JsonParser_Direction.Steps s : steps) {
+                        Log.d(TAG, "HTML_INSTRUCTION: " + s.getHtml_instructions());
+                    }
+                }
+                //String travel_mode = "";
                 for(JsonParser_Direction.Steps s : steps) {
                     polylineOptions = new PolylineOptions();
                     List<LatLng> point = s.getDecodePoints();
@@ -647,20 +754,25 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     polylineOptions.color(Color.BLUE);
 
                     mMap.addPolyline(polylineOptions);
-                    if(!s.travel_mode.equals(travel_mode)) {
-                        String title = Jsoup.parse(s.html_instructions).text();
+                    //if(D) { Log.d(TAG, "last travel_mode: " + travel_mode + ", new travel_mode: " + s.travel_mode); }
+                    //if(!s.travel_mode.equals(travel_mode)) {
+                        //String title = Jsoup.parse(s.getHtml_instructions()).text();
                         StringBuilder snippet = new StringBuilder();
-                        travel_mode = s.travel_mode;
-                        LatLng nowLatLng = new LatLng(Double.parseDouble(s.start_location.get("lat")),
-                                                      Double.parseDouble(s.start_location.get("lng")));
+                        //travel_mode = s.travel_mode;
+                        LatLng nowLatLng = new LatLng(Double.parseDouble(s.getStart_location().get("lat")),
+                                                      Double.parseDouble(s.getStart_location().get("lng")));
+                    if(D) { Log.d(TAG, "nowLatLng: " + nowLatLng); }
                         int imgRes = R.drawable.ic_marker_nav_default;
-                        if(s.travel_mode.equals(Utils.travelModeWalkingUpper)) {
+                        if(s.getTravel_mode().equals(Utils.travelModeWalkingUpper)) {
                             imgRes = R.drawable.ic_marker_nav_walking;
+                            if(D) { Log.d(TAG, "It's WALKING"); }
                         } else
-                        if(s.travel_mode.equals(Utils.travelModeDrivingUpper)) {
+                        if(s.getTravel_mode().equals(Utils.travelModeDrivingUpper)) {
                             imgRes = R.drawable.ic_marker_nav_driving;
+                            if(D) { Log.d(TAG, "It's DRIVING"); }
                         } else
-                        if(s.travel_mode.equals(Utils.travelModeTransitUpper)) {
+                        if(s.getTravel_mode().equals(Utils.travelModeTransitUpper)) {
+                            if(D) { Log.d(TAG, "It's TRANSIT"); }
                             imgRes = R.drawable.ic_marker_nav_transit;
                             snippet.append(getResources().getString(R.string.nav_transit_take));
                             snippet.append(s.getTransitDetails().getTransitShortName());
@@ -671,18 +783,19 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                             snippet.append(getResources().getString(R.string.nav_transit_to));
                             snippet.append(s.getTransitDetails().getArrivalStop());
                         }
+                        if(D) { Log.d(TAG, "snippet: " + snippet); }
                         mMap.addMarker(
                                 new MarkerOptions().position(nowLatLng)
-                                        .title(title)
+                                        .title(Html.fromHtml(s.getHtml_instructions()).toString())
                                         .snippet(snippet.toString())
                                         .icon(BitmapDescriptorFactory.fromResource(imgRes))
                                         .draggable(false)
                         );
-                    }
+                    //}
 
                 }
-                String endLat = steps.get(steps.size()-1).end_location.get("lat");
-                String endLng = steps.get(steps.size()-1).end_location.get("lng");
+                String endLat = steps.get(steps.size()-1).getEnd_location().get("lat");
+                String endLng = steps.get(steps.size()-1).getEnd_location().get("lng");
                 StringBuilder snippet = new StringBuilder(parser.getAllDistance());
                 snippet.append(System.getProperty("line.separator"));
                 snippet.append(parser.getAllTime());
@@ -738,6 +851,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 getXML(true);
             }
             mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.GONE);
+            mDrawerLayout.findViewById(R.id.extraInfo_nav_exit).setVisibility(View.GONE); //nav mode, show 'exit'
+            mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setVisibility(View.VISIBLE); // nav mode, hide 'favor'
         } else { // in nav mode
             mDrawerLayout.findViewById(R.id.extraInfo_nav_exit).setVisibility(View.VISIBLE); //nav mode, show 'exit'
             mDrawerLayout.findViewById(R.id.extraInfo_favor_control).setVisibility(View.GONE); // nav mode, hide 'favor'
@@ -774,6 +889,10 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         item_open_list.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                if(isNavMode) {
+                    Toast.makeText(self, getString(R.string.nav_please_leave_first), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) { // it itself is opening
                     mDrawerLayout.closeDrawer(Gravity.LEFT);
                     //mDrawerList.setAdapter(null);
@@ -812,7 +931,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
                 getXML(true);
 
-                //setIsNavMode(false);
+                setIsNavMode(false);
                 return true;
             }
         });
@@ -821,6 +940,10 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         item_favor_list.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                if(isNavMode) {
+                    Toast.makeText(self, getString(R.string.nav_please_leave_first), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 if(mDrawerLayout.isDrawerOpen(Gravity.RIGHT)) {// if itself is opening, close it!
                     mDrawerLayout.closeDrawer(Gravity.RIGHT);
                     if(D) { Log.d(TAG, "item_favor_list, onClick, close self"); }
