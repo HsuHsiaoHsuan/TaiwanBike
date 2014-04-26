@@ -15,16 +15,27 @@ repositories {
 android {
     compileSdkVersion 19
     buildToolsVersion '19.0.3'
-
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion 11
         targetSdkVersion 19
-        versionCode 1
-        versionName "1.0"
+        versionCode 7
+        versionName "1.7"
     }
+    signingConfigs {
+        release {
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
+            debuggable false
             runProguard false
+            jniDebugBuild false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }

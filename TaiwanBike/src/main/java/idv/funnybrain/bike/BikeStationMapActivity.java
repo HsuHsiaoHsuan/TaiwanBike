@@ -203,46 +203,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
         mLocationClient = new LocationClient(this, this, this);
 
-        // ---- setup SearchView START ----
-        queryTextListener = new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                if(D) Log.d(TAG, "onQueryTextSubmit: " + query);
-                ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(query);
-                return true;
-            }
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if(D) Log.d(TAG, "onQueryTextChange: " + newText);
-                ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(newText);
-
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                // TODO
-                //仍然有問題，開著程式，然後再開別的程式覆蓋過去，別的程式按BACK關掉，#218會當掉!
-                // 還有9版本沒有SearchView問題也待解決！
-
-                return true;
-            }
-        };
-        SearchView searchView = (SearchView) findViewById(R.id.searchView);
-        searchView.setOnQueryTextListener(queryTextListener);
-        // ---- setup SearchView END ----
 
         handler = new Handler() {
             @Override
@@ -370,6 +331,47 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
         if(!isNavMode) { setUpMapIfNeeded(); }
         registerReceiver(mConnReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+        // ---- setup SearchView START ----
+        queryTextListener = new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if(D) Log.d(TAG, "onQueryTextSubmit: " + query);
+                ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if(D) Log.d(TAG, "onQueryTextChange: " + newText);
+                ((BikeStationMapListAdapter) mDrawerList.getAdapter()).getFilter().filter(newText);
+
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                // TODO
+                //仍然有問題，開著程式，然後再開別的程式覆蓋過去，別的程式按BACK關掉，#218會當掉!
+                // 還有9版本沒有SearchView問題也待解決！
+
+                return true;
+            }
+        };
+        SearchView searchView = (SearchView) findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(queryTextListener);
+        // ---- setup SearchView END ----
     }
 
     public void requestData(IXmlDownloader ixd) {
