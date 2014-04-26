@@ -269,6 +269,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                                 //if(D) Log.d(TAG, "---->1");
                             } else {
                                 //if(D) Log.d(TAG, "---->2");
+                                if(entry_station.getLAT().equals("") || entry_station.getLON().equals("")) { continue; }
                                 LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
                                         Double.valueOf(entry_station.getLON()));
                                 int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
@@ -508,6 +509,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 }
 
                     //if (D) Log.d(TAG, "---->3");
+                    if(entry_station.getLAT().equals("") || entry_station.getLON().equals("")) { continue; }
                     LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
                             Double.valueOf(entry_station.getLON()));
                     int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
