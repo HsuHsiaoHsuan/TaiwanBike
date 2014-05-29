@@ -231,8 +231,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                             } else {
                                 //if(D) Log.d(TAG, "---->2");
                                 if(entry_station.getLAT().equals("") || entry_station.getLON().equals("")) { continue; }
-                                LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
-                                        Double.valueOf(entry_station.getLON()));
+                                LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT().replaceAll("\\p{C}", "")),
+                                        Double.valueOf(entry_station.getLON().replaceAll("\\p{C}", "")));
                                 int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
                                 station_marker_hashmap.put(
                                         entry_idx, mMap.addMarker(
@@ -296,8 +296,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 Log.d(TAG, "you select the list position: " + position + ", but the Station.ID is " + selected_station_id);
             }
 
-            LatLng focusLocation = new LatLng(Double.valueOf(station_hashmap.get(selected_station_id).getLAT()),
-                                              Double.valueOf(station_hashmap.get(selected_station_id).getLON()));
+            LatLng focusLocation = new LatLng(Double.valueOf(station_hashmap.get(selected_station_id).getLAT().replaceAll("\\p{C}", "")),
+                                              Double.valueOf(station_hashmap.get(selected_station_id).getLON().replaceAll("\\p{C}", "")));
             if(D) {
                 Log.d(TAG, "selected id: " + ((TextView) view.findViewById(R.id.site_id)).getText() +
                            ", selected text: " + ((TextView) view.findViewById(R.id.title)).getText());
@@ -512,8 +512,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
 
                     //if (D) Log.d(TAG, "---->3");
                     if(entry_station.getLAT().equals("") || entry_station.getLON().equals("")) { continue; }
-                    LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT()),
-                            Double.valueOf(entry_station.getLON()));
+                    LatLng tmpLatLng = new LatLng(Double.valueOf(entry_station.getLAT().replaceAll("\\p{C}", "")),
+                            Double.valueOf(entry_station.getLON().replaceAll("\\p{C}", "")));
                     int icon = getMarkerIcon(Integer.valueOf(entry_station.getAVAILABLE_BIKE()), isFavor);
                     station_marker_hashmap.put(
                             entry_idx, mMap.addMarker(

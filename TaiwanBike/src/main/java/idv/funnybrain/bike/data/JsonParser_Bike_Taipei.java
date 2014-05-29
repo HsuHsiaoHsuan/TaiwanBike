@@ -1,8 +1,12 @@
 package idv.funnybrain.bike.data;
 
-import android.util.Log;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import idv.funnybrain.bike.Utils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,13 +69,41 @@ public class JsonParser_Bike_Taipei implements IParser {
 
         try {
             JSONObject allObject = new JSONObject(resultFromTaipeiGovernment);
-            JSONArray allStation = allObject.getJSONArray("retVal");
-            for(int x=0; x<allStation.length(); x++) {
-                Station tmpStation = new Station(allStation.getJSONObject(x));
-                station_list.add(new Station(allStation.getJSONObject(x)));
-                station_hashmap.put(tmpStation.getID(), tmpStation);
+
+            String retVal_data = allObject.getString("retVal");
+            JsonFactory factory = new JsonFactory();
+            JsonParser parser = factory.createParser(retVal_data);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+            Station_Taipei[] stationList = mapper.readValue(parser, Station_Taipei[].class);
+            for(Station_Taipei st : stationList) {
+                station_list.add(st);
+                station_hashmap.put(st.getID(), st);
             }
+            /*
+            JsonFactory factory = new JsonFactory();
+                    JsonParser parser = factory.createParser(data);
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+                    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+                    StationBeanList[] stationList = mapper.readValue(parser, StationBeanList[].class);
+
+             */
+
+//            JSONArray allStation = allObject.getJSONArray("retVal");
+//            for(int x=0; x<allStation.length(); x++) {
+//                Station tmpStation = new Station(allStation.getJSONObject(x));
+//                station_list.add(new Station(allStation.getJSONObject(x)));
+//                station_hashmap.put(tmpStation.getID(), tmpStation);
+//            }
         } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -84,6 +116,7 @@ public class JsonParser_Bike_Taipei implements IParser {
         return station_hashmap;
     }
 
+    /*
     public static class Station implements IStation {
         private String serialNo;
         private String stationName;
@@ -103,8 +136,8 @@ public class JsonParser_Bike_Taipei implements IParser {
                 serialNo = input.getString("sno"); if(D) { Log.d(TAG, "sno: " + serialNo); }
                 stationName = input.getString("sna"); if(D) { Log.d(TAG, "sna: " + stationName); }
                 availableBike = input.getString("sbi"); if(D) { Log.d(TAG, "sbi: " + availableBike); }
-                stationLat = input.getString("lat"); if(D) { Log.d(TAG, "lat: " + stationLat); }
-                stationLng = input.getString("lng"); if(D) { Log.d(TAG, "lng: " + stationLng); }
+                stationLat = input.getString("lat").replaceAll("\\p{C}", ""); if(D) { Log.d(TAG, "lat: " + stationLat); }
+                stationLng = input.getString("lng").replaceAll("\\p{C}", ""); if(D) { Log.d(TAG, "lng: " + stationLng); }
                 stationDistrict = input.getString("sarea"); if(D) { Log.d(TAG, "sarea: " + stationDistrict); }
                 stationAddress = input.getString("ar"); if(D) { Log.d(TAG, "ar: " + stationAddress); }
                 availableParking = input.getString("bemp"); if(D) { Log.d(TAG, "bemp: " + availableParking); }
@@ -158,5 +191,5 @@ public class JsonParser_Bike_Taipei implements IParser {
         public String getDistrict_eng() { return stationDistrict_eng; }
 
         public String getADDRESS_eng() { return stationAddress_eng; }
-    }
+    }*/
 }

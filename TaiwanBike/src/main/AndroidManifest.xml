@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="idv.funnybrain.bike"
-    android:versionCode="7"
-    android:versionName="1.7">
+    android:versionCode="10"
+    android:versionName="1.7.3">
 
     <uses-sdk android:minSdkVersion="11"/>
 
@@ -84,4 +84,20 @@
     <!-- version Code 7, version name 1.7, 2014-4-26 -->
     <!--
         1. UI re-layout
+    -->
+    <!-- version Code 8, version name 1.7.1, 2014-5-17 -->
+    <!--
+        1. fix error in Taipei json Data
+           it contains unicode e200,
+           use String.replaceAll("\\p{C}", "") to fix it
+    -->
+    <!-- version Code 9, version name 1.7.2, 2014-5-18 -->
+    <!--
+        1. fix error in Taipei json Data
+           it contains unicode e200,
+           use String.replaceAll("\\p{C}", "") to fix it
+    -->
+    <!-- version Code 10, version name 1.7.3 2014-5-29 -->
+    <!--
+        1. update taipei data source
     -->

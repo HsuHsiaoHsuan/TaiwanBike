@@ -146,7 +146,10 @@ public class BikeStationMapListAdapter extends BaseAdapter implements Filterable
 
         Location location = (new Utils()).getLocation();
         if(location != null) {
-            double result = getDistance(location.getLatitude(), location.getLongitude(), Double.valueOf(s.getLAT()), Double.valueOf(s.getLON()));
+            double result = getDistance(location.getLatitude(),
+                                        location.getLongitude(),
+                                        Double.valueOf(s.getLAT().replaceAll("\\p{C}", "")),
+                                        Double.valueOf(s.getLON().replaceAll("\\p{C}", "")));
             holder.distance.setText(formatNumber(result));
             holder.distance.setVisibility(View.VISIBLE);
         }

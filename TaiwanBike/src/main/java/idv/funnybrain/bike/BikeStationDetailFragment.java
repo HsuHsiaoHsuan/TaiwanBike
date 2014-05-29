@@ -351,8 +351,8 @@ class BikeStationDetailFragment extends SherlockDialogFragment implements IXmlDo
 //            } else {
 
             IStation s = BikeStationMapActivity.station_hashmap.get(id);
-            bike = s.getAVAILABLE_BIKE();
-            parking = s.getAVAILABLE_PARKING();
+            bike = String.valueOf(s.getAVAILABLE_BIKE());
+            parking = String.valueOf(s.getAVAILABLE_PARKING());
             Message message = new Message();
             message.what = MSG_DOWNLOAD_OK;
             BikeStationDetailFragment.this.handler.sendMessage(message);

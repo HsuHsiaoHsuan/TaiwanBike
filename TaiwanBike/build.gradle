@@ -15,11 +15,16 @@ repositories {
 android {
     compileSdkVersion 19
     buildToolsVersion '19.0.3'
+    packagingOptions {
+        pickFirst 'META-INF/ASL2.0'
+        pickFirst 'META-INF/LICENSE'
+        pickFirst 'META-INF/NOTICE'
+    }
     defaultConfig {
         minSdkVersion 11
         targetSdkVersion 19
-        versionCode 7
-        versionName "1.7"
+        versionCode 10
+        versionName "1.7.3"
     }
     signingConfigs {
         release {
@@ -46,6 +51,8 @@ dependencies {
     compile 'com.android.support:support-v4:19.1.+'
     compile 'com.google.maps.android:android-maps-utils:0.2+'
     compile 'com.google.android.gms:play-services:4.0.30'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.3.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.3.3'
     compile 'org.jsoup:jsoup:1.7.2'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
