@@ -25,6 +25,7 @@ import com.actionbarsherlock.view.*;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
+// http://stackoverflow.com/questions/27372638/android-play-services-6-5-locationclient-is-missing
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
