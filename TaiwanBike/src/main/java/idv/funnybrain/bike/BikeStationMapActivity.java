@@ -24,8 +24,10 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.*;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+//import com.google.android.gms.location.LocationClient;
 // http://stackoverflow.com/questions/27372638/android-play-services-6-5-locationclient-is-missing
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -43,7 +45,7 @@ import java.util.*;
  * Created by Freeman on 2014/2/18.
  */
 public class BikeStationMapActivity extends SherlockFragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener {
+        GooglePlayServicesClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     // ---- constants START ----
     private static final boolean D = false;
@@ -90,8 +92,10 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     private final int MSG_DOWNLOAD_OK = 999;
     private GoogleMap mMap;
     private ClusterManager<MyItem> mClusterManager;
-    private LocationClient mLocationClient;
-    // -- for DrawerLayout START --
+//    private LocationClient mLocationClient;
+    private GoogleApiClient mGoogleApiClient;
+    Location mLastLocation;
+        // -- for DrawerLayout START --
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ListView mDrawerListRight;
@@ -202,7 +206,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        mLocationClient = new LocationClient(this, this, this);
+//        mLocationClient = new LocationClient(this, this, this);
 
 
 
@@ -244,9 +248,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                             }
                         }
 
-                        if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) { // get current location
-                            utils.setLocation(mLocationClient.getLastLocation());
-                        }
+                        // get current location
+                        setLastLocation();
                         // set new station_list to left list
                         mDrawerList.setAdapter(new BikeStationMapListAdapter(getLayoutInflater(), new ArrayList<IStation>(station_hashmap.values())));
                         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -316,12 +319,10 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     @Override
     protected void onStart() {
         super.onStart();
-        mLocationClient.connect();
     }
 
     @Override
     protected void onStop() {
-        mLocationClient.disconnect();
         super.onStop();
     }
 
@@ -603,8 +604,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         mDrawerLayout.findViewById(R.id.extraInfo_walk).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
+                if(mLastLocation != null) {
+                    String webConn = utils.getDirectionURL(mLastLocation,
                             markerLatLng,
                             Utils.travelModeWalking);
                     if(D) { Log.d(TAG, "onClick, walk, conn: " + webConn); }
@@ -634,8 +635,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         mDrawerLayout.findViewById(R.id.extraInfo_driving).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
+                if(mLastLocation != null) {
+                    String webConn = utils.getDirectionURL(mLastLocation,
                             markerLatLng,
                             Utils.travelModeDriving);
                     if(D) { Log.d(TAG, "onClick, driving, conn: " + webConn); }
@@ -650,8 +651,8 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
         mDrawerLayout.findViewById(R.id.extraInfo_public_trans).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                    String webConn = utils.getDirectionURL(mLocationClient.getLastLocation(),
+                if(mLastLocation != null) {
+                    String webConn = utils.getDirectionURL(mLastLocation,
                             markerLatLng,
                             Utils.travelModeTransit);
                     if(D) { Log.d(TAG, "onClick, transit, conn: " + webConn); }
@@ -902,9 +903,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     mDrawerLayout.closeDrawer(Gravity.LEFT);
                     //mDrawerList.setAdapter(null);
                 } else { // now will start to opent itself
-                    if (mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                        utils.setLocation(mLocationClient.getLastLocation());
-                    }
+                    setLastLocation();
 
                     if (mDrawerLayout.isDrawerOpen(Gravity.RIGHT)) { // but if the right is opening, close it.
                         mDrawerLayout.closeDrawer(Gravity.RIGHT);
@@ -924,9 +923,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                 mDrawerList.setAdapter(null);
                 mDrawerListRight.setAdapter(null);
 
-                if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                    utils.setLocation(mLocationClient.getLastLocation());
-                }
+                setLastLocation();
 
                 mDrawerLayout.findViewById(R.id.extraInfo).setVisibility(View.GONE); // click refresh, hide extra info
                 mDrawerLayout.closeDrawers();
@@ -953,9 +950,7 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
                     mDrawerLayout.closeDrawer(Gravity.RIGHT);
                     if(D) { Log.d(TAG, "item_favor_list, onClick, close self"); }
                 } else { // will open itself now
-                    if(mLocationClient.isConnected() && (mLocationClient.getLastLocation() != null)) {
-                        utils.setLocation(mLocationClient.getLastLocation());
-                    }
+                    setLastLocation();
 
                     if(mDrawerLayout.isDrawerOpen(Gravity.LEFT)) { // if LEFT is opening, close it!
                         mDrawerLayout.closeDrawer(Gravity.LEFT);
@@ -1230,9 +1225,33 @@ public class BikeStationMapActivity extends SherlockFragmentActivity implements 
     @Override
     public void onConnected(Bundle bundle) {
         if(D) Log.d(TAG, "onConnected! ");
-        Location mCurrentLocation = mLocationClient.getLastLocation();
+//        Location mCurrentLocation = mLocationClient.getLastLocation();
         //if(D) { Log.d(TAG, "onConnected, " + "Latitude: " + mCurrentLocation.getLatitude() +
         //        "Longitude: " + mCurrentLocation.getLongitude()); }
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+        }
+
+    }
+
+    private void setLastLocation() {
+        if (mLastLocation != null) {
+            utils.setLocation(mLastLocation);
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
     @Override

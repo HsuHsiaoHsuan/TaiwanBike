@@ -1,20 +1,13 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.0'
-    }
-}
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    useLibrary  'org.apache.http.legacy'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.1'
     packagingOptions {
         pickFirst 'META-INF/ASL2.0'
         pickFirst 'META-INF/LICENSE'
@@ -22,7 +15,7 @@ android {
     }
     defaultConfig {
         minSdkVersion 11
-        targetSdkVersion 19
+        targetSdkVersion 23
         versionCode 10
         versionName "1.7.3"
     }
@@ -45,15 +38,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+
 }
 
 dependencies {
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:21.0.3'
+    compile 'com.android.support:support-v4:23.1.0'
     compile 'com.google.maps.android:android-maps-utils:0.3+'
     compile 'com.google.android.gms:play-services:6.5.87'
     compile 'com.fasterxml.jackson.core:jackson-core:2.3.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.3.3'
     compile 'org.jsoup:jsoup:1.7.2'
+    compile 'org.apache.httpcomponents:httpcore:4.4.1'
+    compile 'org.apache.httpcomponents:httpclient:4.5'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }

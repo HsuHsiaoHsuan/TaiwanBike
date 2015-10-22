@@ -6,6 +6,8 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import com.google.android.gms.maps.model.LatLng;
+//import org.apache.http.impl.client.DefaultHttpClient;
+//import org.apache.http.params.BasicHttpParams;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
