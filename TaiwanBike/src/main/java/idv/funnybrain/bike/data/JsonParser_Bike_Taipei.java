@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -46,8 +47,16 @@ public class JsonParser_Bike_Taipei implements IParser {
             URL url = new URL(Utils.OPENDATA_BIKE_TAIPEI);
             httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.connect();
+            final String location = httpURLConnection.getHeaderField("Location");
+            httpURLConnection.disconnect();
 
-            inputStream = httpURLConnection.getInputStream();
+            URL newURL = new URL(location);
+            HttpURLConnection newConn = (HttpURLConnection) newURL.openConnection();
+            newConn.setReadTimeout(10000);
+            newConn.setConnectTimeout(15000);
+            newConn.connect();
+
+            inputStream = newConn.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             StringBuffer sb = new StringBuffer();
             String line = "";
@@ -58,7 +67,7 @@ public class JsonParser_Bike_Taipei implements IParser {
 
             br.close();
             inputStream.close();
-            httpURLConnection.disconnect();
+            newConn.disconnect();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -70,34 +79,28 @@ public class JsonParser_Bike_Taipei implements IParser {
         try {
             JSONObject allObject = new JSONObject(resultFromTaipeiGovernment);
 
-            String retVal_data = allObject.getString("retVal");
+//            String retVal_data = allObject.getString("retVal");
+            JSONObject obj_result = allObject.getJSONObject("retVal");
             JsonFactory factory = new JsonFactory();
-            JsonParser parser = factory.createParser(retVal_data);
+//            JsonParser parser = factory.createParser(retVal_data);
+            JsonParser parser;
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
             mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-            Station_Taipei[] stationList = mapper.readValue(parser, Station_Taipei[].class);
-            for(Station_Taipei st : stationList) {
-                station_list.add(st);
-                station_hashmap.put(st.getID(), st);
+            Iterator<String> it = obj_result.keys();
+            while (it.hasNext()) {
+                final String idx = it.next();
+                String result = obj_result.getString(idx);
+                parser = factory.createParser(result);
+                Station_Taipei station = mapper.readValue(parser, Station_Taipei.class);
+                station_list.add(station);
+                station_hashmap.put(station.getID(), station);
             }
-            /*
-            JsonFactory factory = new JsonFactory();
-                    JsonParser parser = factory.createParser(data);
-                    ObjectMapper mapper = new ObjectMapper();
-                    mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-                    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-                    StationBeanList[] stationList = mapper.readValue(parser, StationBeanList[].class);
-
-             */
-
-//            JSONArray allStation = allObject.getJSONArray("retVal");
-//            for(int x=0; x<allStation.length(); x++) {
-//                Station tmpStation = new Station(allStation.getJSONObject(x));
-//                station_list.add(new Station(allStation.getJSONObject(x)));
-//                station_hashmap.put(tmpStation.getID(), tmpStation);
+//            Station_Taipei[] stationList = mapper.readValue(parser, Station_Taipei[].class);
+//            for(Station_Taipei st : stationList) {
+//                station_list.add(st);
+//                station_hashmap.put(st.getID(), st);
 //            }
         } catch (JSONException e) {
             e.printStackTrace();

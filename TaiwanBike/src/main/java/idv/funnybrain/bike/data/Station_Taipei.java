@@ -4,13 +4,8 @@ package idv.funnybrain.bike.data;
  * Created by Freeman on 2014/5/17.
  */
 public class Station_Taipei implements IStation {
-    private int iid;
-    private int sv;
-    private double sd;
-    private int vtyp;
     private String sno;
     private String sna;
-    private String sip;
     private int tot;
     private String sbi;
     private String sarea;
@@ -21,25 +16,8 @@ public class Station_Taipei implements IStation {
     private String sareaen;
     private String snaen;
     private String aren;
-    private int nbcnt;
     private String bemp;
     private int act;
-
-    public int getIid() { return iid; }
-
-    public void setIid(int iid) { this.iid = iid; }
-
-    public int getSv() { return sv; }
-
-    public void setSv(int sv) { this.sv = sv; }
-
-    public double getSd() { return sd; }
-
-    public void setSd(double sd) { this.sd = sd; }
-
-    public int getVtyp() { return vtyp; }
-
-    public void setVtyp(int vtyp) { this.vtyp = vtyp; }
 
     public String getSno() { return sno; }
 
@@ -48,10 +26,6 @@ public class Station_Taipei implements IStation {
     public String getSna() { return sna; }
 
     public void setSna(String sna) { this.sna = sna; }
-
-    public String getSip() { return sip; }
-
-    public void setSip(String sip) { this.sip = sip; }
 
     public int getTot() { return tot; }
 
@@ -92,10 +66,6 @@ public class Station_Taipei implements IStation {
     public String getAren() { return aren; }
 
     public void setAren(String aren) { this.aren = aren; }
-
-    public int getNbcnt() { return nbcnt; }
-
-    public void setNbcnt(int nbcnt) { this.nbcnt = nbcnt; }
 
     public String getBemp() { return bemp; }
 

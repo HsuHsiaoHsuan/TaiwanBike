@@ -20,7 +20,7 @@ public class Utils {
 
     public static final String OPENDATA_BIKE = "http://www.c-bike.com.tw/xml/stationlistopendata.aspx";
 
-    public static final String OPENDATA_BIKE_TAIPEI = "http://opendata.dot.taipei.gov.tw/opendata/gwjs_cityhall.json";
+    public static final String OPENDATA_BIKE_TAIPEI = "http://data.taipei/youbike";
 
     public static final String StationID = "StationID";
     public static final String StationNO = "StationNO";
